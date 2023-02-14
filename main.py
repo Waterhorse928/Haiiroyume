@@ -1,52 +1,84 @@
-import time
 import math
 
 class Character:
-    def __init__(self, name, base_stats, growth_rates):
+    def __init__(self, name="", hp=0):
         self.name = name
-        self.level = 1
-        self.growth_rates = growth_rates
-        self.base_stats = base_stats
-        self.stats = self.calculate_stats()
-        self.turn_bar = 0
+        self.hp = hp
+        self.hpMax = hp
 
-    def calculate_stats(self):
-        stats = {}
-        for stat, growth_rate in self.growth_rates.items():
-            stats[stat] = self.base_stats[stat] + self.level * growth_rate
-        return stats
-    
-    def level_up(self):
-        self.level += 1
-        self.stats = self.calculate_stats()
+class Reimu(Character):
+    def __init__(self):
+        super().__init__("Reimu Hakurei", 20)
+        self.sp = 0
+        self.update()
 
-    def update_turn_bar(self):
-        self.turn_bar += self.stats['SPD'] / 10
-        if self.turn_bar >= 100:
-            self.turn_bar = 0
-            # Trigger turn
+    def update(self):
+        self.info = f'Graze {self.sp}'
 
+class Marisa(Character):
+    def __init__(self):
+        super().__init__("Marisa Kirisame", 24)
+        self.sp = 30
+        self.update()
+
+    def update(self):
+        self.info = f'Magic {self.sp}'
+
+
+class Boss:
+    def __init__(self, name="", hp=0):
+        self.name = name
+        self.hp = hp
+        self.hpMax = hp
+
+class Marisa_Boss(Boss):
+    def __init__(self):
+        super().__init__("Marisa Kirisame", 50)
+        self.sp = 30
+        self.update()
+
+    def update(self):
+        self.info = f'Magic {self.sp}'
+
+def box(text):
+    boxSize = 100
+    print(f'{"":-^{boxSize+2}}')
+    rows = len(text)
+    for x in range(0,rows):
+        columns = len(text[x])
+        margin = boxSize//columns
+        print ("|",end="")
+        for y in text[x]:
+            print(f'{y: ^{margin}}',end="")
+        print ("|")
+    print(f'{"":-^{boxSize+2}}')
+
+def percentage(part, whole, size):
+    return size * float(part) / float(whole)
+
+def healthbar(HP,maxHP,size):
+    if maxHP <= size:
+        bar = ('|'*HP)
+        result = (f'[{bar: <{maxHP}}]')
+    elif maxHP > size:
+        percent = math.ceil(percentage(HP,maxHP,size))
+        bar = ('|'*percent)
+        result = (f'[{bar: <{size}}]')
+    return result
 
 def main_game_loop():
-    character = Character("Player",base_stats,base_stats)
-
+    char1 = Reimu()
+    char2 = Marisa()
+    boss = Marisa_Boss()
     while True:
-        character.update_turn_bar()
-        print("Turn bar:", math.floor(character.turn_bar))
-        time.sleep(1)
-
-base_stats = {
-    "HP": 100,
-    "SP": 50,
-    "AP": 0,
-    "STR": 5,
-    "MAG": 5,
-    "DEF": 5,
-    "RES": 5,
-    "SPD": 5,
-    "SKL": 5,
-    "EVA": 5,
-    "LUK": 5
-}
+        char1.update()
+        char2.update()
+        boss.update()
+        box([[boss.name],[f"Health {boss.hp}/{boss.hpMax}"],[healthbar(boss.hp,boss.hpMax,50)],[boss.info]])
+        box([[char1.name,char2.name],
+             [f"HP {char1.hp}/{char1.hpMax}",f"HP {char2.hp}/{char2.hpMax}"],
+             [healthbar(char1.hp,char1.hpMax,10),healthbar(char2.hp,char2.hpMax,10)],
+             [char1.info,char2.info]])
+        break
 
 main_game_loop()

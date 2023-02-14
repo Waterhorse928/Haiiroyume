@@ -66,19 +66,23 @@ def healthbar(HP,maxHP,size):
         result = (f'[{bar: <{size}}]')
     return result
 
-def main_game_loop():
-    char1 = Reimu()
-    char2 = Marisa()
-    boss = Marisa_Boss()
+def displayBattleScreen(boss,chars):
+    characters = [char for char in (chars) if char != 0]
+    numberOfChar = len(characters)
+    boxList1 = [[boss.name],[f"Health {boss.hp}/{boss.hpMax}"],[healthbar(boss.hp,boss.hpMax,50)],[boss.info]]
+    boxList2 = [[char.name for char in characters],
+                [f"HP {char.hp}/{char.hpMax}" for char in characters],
+                [healthbar(char.hp,char.hpMax,10) for char in characters],
+                [char.info for char in characters]]
+    box(boxList1)
+    if numberOfChar > 0:
+        box(boxList2)
+
+
+def battleLoop(boss,chars):
     while True:
-        char1.update()
-        char2.update()
-        boss.update()
-        box([[boss.name],[f"Health {boss.hp}/{boss.hpMax}"],[healthbar(boss.hp,boss.hpMax,50)],[boss.info]])
-        box([[char1.name,char2.name],
-             [f"HP {char1.hp}/{char1.hpMax}",f"HP {char2.hp}/{char2.hpMax}"],
-             [healthbar(char1.hp,char1.hpMax,10),healthbar(char2.hp,char2.hpMax,10)],
-             [char1.info,char2.info]])
+        displayBattleScreen(boss,chars)
+
         break
 
-main_game_loop()
+battleLoop(Marisa_Boss(),[Reimu(),Reimu(),Reimu(),Reimu(),Reimu()])

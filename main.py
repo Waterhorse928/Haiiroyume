@@ -1,5 +1,6 @@
 import math
 import random
+import time
 # All characters have these stats.
 class Character:
     def __init__(self, name="", hp=0):
@@ -12,14 +13,17 @@ class Reimu(Character):
         super().__init__("Reimu Hakurei", 20)
         self.sp = 0
         self.update()
+        self.skills = [self.homingAmulet]
 
     def update(self):
         self.info = f'Graze {self.sp}'
 
 # Attacks and Skills
     def homingAmulet(self, target):
-        target.hp -= 4
-        print(f"{self.name} used Homing Amulet! {target.name} took 4 damage.")
+        result = {"name":"Homing Amulet","damage":4,"info":"Deals 4 damage."}
+        return result
+    
+
 
 class Marisa(Character):
     def __init__(self):
@@ -82,6 +86,24 @@ def healthbar(HP,maxHP,size):
         result = (f'[{bar: <{size}}]')
     return result
 
+def ask (lowRange,highRange):
+    while True:
+        try:
+            result = int(input(""))
+        except:
+            continue
+        if lowRange <= result <= highRange:
+            return result
+        
+def askList (numberList):
+    while True:
+        try:
+            result = int(input(""))
+        except:
+            continue
+        if result in numberList:
+            return result
+
 def displayBattleScreen(boss,chars):
     characters = [char for char in (chars) if char != 0]
     numberOfChar = len(characters)
@@ -97,26 +119,19 @@ def displayBattleScreen(boss,chars):
     if numberOfChar > 0:
         box(boxList2)
 
+def displayTurn(char):
+    displaySkills = [["Choose an action:"]]
+    for x in char.skills:
+        pass
+
+
+    box([["Choose an action:"]])
+
+
 def battleLoop(boss, chars):
-    characters = [boss] + [char for char in chars if char != 0]
-    turnCounter = 0
-    while boss.hp > 0 and any(char.hp > 0 for char in chars):
-        displayBattleScreen(boss, chars)
-        currentCharacter = characters[turnCounter % len(characters)]
-        if currentCharacter in chars:
-            print(f'{currentCharacter.name} ({healthbar(currentCharacter.hp,currentCharacter.hpMax,10)} HP):', end=' ')
-            print('What would you like to do?')
-            for i, skill in enumerate(currentCharacter.skills):
-                print(f'{i + 1}. {skill.__name__}')
-            choice = int(input('Enter the number of the skill you would like to use: ')) - 1
-            chosenSkill = currentCharacter.skills[choice]
-            target = boss if input('Would you like to attack the boss? (y/n) ') == 'y' else chars[(chars.index(currentCharacter) + 1) % len(chars)]
-            chosenSkill(target)
-        else:
-            bossSkill = random.choice(boss.skills)
-            target = random.choice(chars)
-            bossSkill(target)
-        turnCounter += 1
+    displayBattleScreen(boss, chars)
+
+
 
 
 battleLoop(Marisa_Boss(),[Reimu()])

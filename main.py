@@ -1,6 +1,8 @@
 import math
 import random
 import time
+import skills
+
 # All characters have these stats.
 class Character:
     def __init__(self, name="", hp=0):
@@ -13,18 +15,11 @@ class Reimu(Character):
         super().__init__("Reimu Hakurei", 20)
         self.sp = 0
         self.update()
-        self.skills = [self.homingAmulet]
+        self.skills = [skills.HomingAmulet]
 
     def update(self):
         self.info = f'Graze {self.sp}'
-
-# Attacks and Skills
-    def homingAmulet(self, target):
-        result = {"name":"Homing Amulet","damage":4,"info":"Deals 4 damage."}
-        return result
     
-
-
 class Marisa(Character):
     def __init__(self):
         super().__init__("Marisa Kirisame", 24)
@@ -34,13 +29,13 @@ class Marisa(Character):
     def update(self):
         self.info = f'Magic {self.sp}'
 
-class Boss:
+class Foe:
     def __init__(self, name="", hp=0):
         self.name = name
         self.hp = hp
         self.hpMax = hp
 
-class Marisa_Boss(Boss):
+class Marisa_Foe(Foe):
     def __init__(self):
         super().__init__("Marisa Kirisame", 50)
         self.sp = 30
@@ -104,34 +99,56 @@ def askList (numberList):
         if result in numberList:
             return result
 
-def displayBattleScreen(boss,chars):
-    characters = [char for char in (chars) if char != 0]
-    numberOfChar = len(characters)
-    boxList1 = [[boss.name],
-                [f"Health {boss.hp}/{boss.hpMax}"],
-                [healthbar(boss.hp,boss.hpMax,50)],
-                [boss.info]]
+def getPartyList(unit):
+    if issubclass(unit,Character):
+        party = []
+        
+        return party
+    elif issubclass(unit,Foe):
+        pass
+
+def getEnemyList(unit):
+    if issubclass(unit,Character):
+        pass
+    elif issubclass(unit,Foe):
+        pass
+
+def chooseTarget(char,skillType):
+    pass
+
+def useSkill(char,skill):
+    if skill.type == 1:
+        target = chooseTarget(char,skill.type)
+
+        print(f"{char.name} used {skill.name} on {target.name}")
+        target
+
+def chooseSkill(char):
+    pass
+
+
+def displayBattleScreen(foes,chars):
+    characters = [char for char in chars]
+    enemies = [foe for foe in foes]
+    boxList1 = [[foe.name for foe in enemies],
+                [f"Health {foe.hp}/{foe.hpMax}" for foe in enemies],
+                [healthbar(foe.hp,foe.hpMax,50) for foe in enemies],
+                [foe.info for foe in enemies]]
     boxList2 = [[char.name for char in characters],
                 [f"HP {char.hp}/{char.hpMax}" for char in characters],
                 [healthbar(char.hp,char.hpMax,10) for char in characters],
                 [char.info for char in characters]]
     box(boxList1)
-    if numberOfChar > 0:
-        box(boxList2)
+    box(boxList2)
 
 def displayTurn(char):
-    displaySkills = [["Choose an action:"]]
-    for x in char.skills:
-        pass
+    pass
 
 
-    box([["Choose an action:"]])
-
-
-def battleLoop(boss, chars):
-    displayBattleScreen(boss, chars)
+def battleLoop(foes, chars):
+    displayBattleScreen(foes, chars)
 
 
 
 
-battleLoop(Marisa_Boss(),[Reimu()])
+battleLoop([Marisa_Foe()],[Reimu()])

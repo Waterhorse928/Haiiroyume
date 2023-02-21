@@ -116,19 +116,30 @@ def askList (numberList):
         if result in numberList:
             return result
 
-def getPartyList(unit):
+def getPartyList(unit,koed,enemy):
     if issubclass(unit,Character):
         party = []
-        
+        if enemy:
+            for foe in foes:
+                if koed:
+                    party.append(foe) 
+                elif foe.hp > 0:
+                    party.append(foe)
+        else:
+            for char in chars:
+                if koed:
+                    party.append(char)
+                elif char.hp > 0:
+                    party.append(char)
         return party
     elif issubclass(unit,Foe):
-        pass
-
-def getEnemyList(unit):
-    if issubclass(unit,Character):
-        pass
-    elif issubclass(unit,Foe):
-        pass
+        party = []
+        for foe in foes:
+            if koed:
+                party.append(foe) 
+            elif foe.hp > 0:
+                party.append(foe)
+        return party
 
 def chooseTarget(char,skillType):
     pass

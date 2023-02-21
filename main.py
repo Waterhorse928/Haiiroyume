@@ -1,7 +1,24 @@
 import math
 import random
 import time
-import skills
+
+#skills
+class Skill():
+    def __init__(self):
+        pass
+
+class OneTargetAttack(Skill):
+    def __init__(self):
+        super().__init__()
+        self.type = 0
+        self.damage = 1
+
+class HomingAmulet(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 4
+        self.cost = 0
+
 
 # All characters have these stats.
 class Character:
@@ -15,7 +32,7 @@ class Reimu(Character):
         super().__init__("Reimu Hakurei", 20)
         self.sp = 0
         self.update()
-        self.skills = [skills.HomingAmulet]
+        self.skills = [HomingAmulet]
 
     def update(self):
         self.info = f'Graze {self.sp}'
@@ -127,7 +144,7 @@ def chooseSkill(char):
     pass
 
 
-def displayBattleScreen(foes,chars):
+def displayBattleScreen():
     characters = [char for char in chars]
     enemies = [foe for foe in foes]
     boxList1 = [[foe.name for foe in enemies],
@@ -145,10 +162,11 @@ def displayTurn(char):
     pass
 
 
-def battleLoop(foes, chars):
-    displayBattleScreen(foes, chars)
+def battleLoop():
+    displayBattleScreen()
 
 
+chars = [Reimu()]
+foes = [Marisa_Foe()]
 
-
-battleLoop([Marisa_Foe()],[Reimu()])
+battleLoop()

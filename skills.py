@@ -1,6 +1,7 @@
-valid = ("rock", "paper", "scissors")
-choice = input("What is your choice? ").lower()
-while choice not in valid:
-    print("\033[1A\033[K", end="")
-    choice = input("Invalid choice.  Try again: ").lower()
-print("\033[1A\033[K", end="")
+import os
+
+# clear the entire console
+os.system('cls' if os.name == 'nt' else 'clear')
+
+# write some output
+print("Hello, world!")

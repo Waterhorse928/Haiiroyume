@@ -5,12 +5,14 @@ import time
 #skills
 class Skill():
     def __init__(self):
-        pass
+        self.name = ''
+        self.info = ""
+        self.info2 = ""
 
 class OneTargetAttack(Skill):
     def __init__(self):
         super().__init__()
-        self.type = 0
+        self.type = 1
         self.damage = 1
 
 class HomingAmulet(OneTargetAttack):
@@ -18,7 +20,18 @@ class HomingAmulet(OneTargetAttack):
         super().__init__()
         self.damage = 4
         self.cost = 0
+        self.name = 'Homing Amulet'
+        self.info = "Cost: 0 Points"
+        self.info2 = "Deals 4 Damage"
 
+class FantasySeal(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 10
+        self.cost = 5
+        self.name = 'Fastasy Seal'
+        self.info = "Cost: 5 Points"
+        self.info2 = "Deals 10 Damage"
 
 # All characters have these stats.
 class Character:
@@ -32,7 +45,7 @@ class Reimu(Character):
         super().__init__("Reimu Hakurei", 20)
         self.sp = 0
         self.update()
-        self.skills = [HomingAmulet]
+        self.skills = [HomingAmulet(),FantasySeal()]
 
     def update(self):
         self.info = f'Graze {self.sp}'
@@ -101,23 +114,25 @@ def healthbar(HP,maxHP,size):
 def ask (lowRange,highRange):
     while True:
         try:
-            result = int(input(""))
+            result = int(input("Choose a number: "))
         except:
             continue
         if lowRange <= result <= highRange:
+            print("\033[1A\033[K", end="")
             return result
         
 def askList (numberList):
     while True:
         try:
-            result = int(input(""))
+            result = int(input("Choose a number: "))
         except:
             continue
         if result in numberList:
+            print("\033[1A\033[K", end="")
             return result
 
 def getPartyList(unit,koed,enemy):
-    if issubclass(unit,Character):
+    if isinstance(unit,Character):
         party = []
         if enemy:
             for foe in foes:
@@ -132,7 +147,7 @@ def getPartyList(unit,koed,enemy):
                 elif char.hp > 0:
                     party.append(char)
         return party
-    elif issubclass(unit,Foe):
+    elif isinstance(unit,Foe):
         party = []
         for foe in foes:
             if koed:
@@ -141,19 +156,38 @@ def getPartyList(unit,koed,enemy):
                 party.append(foe)
         return party
 
-def chooseTarget(char,skillType):
-    pass
-
+def chooseTarget(char,skill):
+    if skill.type == 1:
+        party = getPartyList(char,True,True)
+        if len(party) != 1:
+            display = [[f'-- Choose an target for {skill.name} --'],
+                       [str(party.index(foe)+1)+ ". " + foe.name for foe in party]]
+            box(display)
+            result = ask(1,len(party))
+            result = party[result-1]
+            for i in range(4):
+                print("\033[1A\033[K", end="")
+        else:
+            result = party[0]
+        return result
+    
 def useSkill(char,skill):
     if skill.type == 1:
-        target = chooseTarget(char,skill.type)
-
+        if isinstance(char,Character):
+            target = chooseTarget(char,skill)
         print(f"{char.name} used {skill.name} on {target.name}")
-        target
-
+        
 def chooseSkill(char):
-    pass
-
+    display = [[f'-- Choose an action for {char.name} --'],
+               [str(char.skills.index(s)+1)+ ". " + s.name for s in char.skills],
+               [s.info for s in char.skills],
+               [s.info2 for s in char.skills]]
+    box(display)
+    result = ask(1,len(char.skills))
+    result = char.skills[result-1]
+    for i in range(6):
+        print("\033[1A\033[K", end="")
+    return result
 
 def displayBattleScreen():
     characters = [char for char in chars]
@@ -169,12 +203,13 @@ def displayBattleScreen():
     box(boxList1)
     box(boxList2)
 
-def displayTurn(char):
-    pass
-
-
+def unitTurn(unit):
+    if isinstance(unit,Character):
+        displayBattleScreen()
+        useSkill(unit,chooseSkill(unit))
+    
 def battleLoop():
-    displayBattleScreen()
+    unitTurn(chars[0])
 
 
 chars = [Reimu()]

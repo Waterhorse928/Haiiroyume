@@ -119,8 +119,6 @@ def ask (lowRange,highRange):
         except:
             continue
         if lowRange <= result <= highRange:
-            sys.stdout.write("\033[F") #back to previous line 
-            sys.stdout.write("\033[K") #clear line 
             return result
         
 def askList (numberList):
@@ -130,8 +128,6 @@ def askList (numberList):
         except:
             continue
         if result in numberList:
-            sys.stdout.write("\033[F") #back to previous line 
-            sys.stdout.write("\033[K") #clear line 
             return result
 
 def getPartyList(unit,koed,enemy):
@@ -168,9 +164,6 @@ def chooseTarget(char,skill):
             box(display)
             result = ask(1,len(party))
             result = party[result-1]
-            for i in range(4):
-                sys.stdout.write("\033[F") #back to previous line 
-                sys.stdout.write("\033[K") #clear line 
         else:
             result = party[0]
         return result
@@ -189,9 +182,6 @@ def chooseSkill(char):
     box(display)
     result = ask(1,len(char.skills))
     result = char.skills[result-1]
-    for i in range(6):
-        sys.stdout.write("\033[F") #back to previous line 
-        sys.stdout.write("\033[K") #clear line 
     return result
 
 def displayBattleScreen():
@@ -214,7 +204,10 @@ def unitTurn(unit):
         useSkill(unit,chooseSkill(unit))
     
 def battleLoop():
-    unitTurn(chars[0])
+    while True:
+        unitTurn(chars[0])
+        unitTurn(chars[0])
+        break
 
 
 chars = [Reimu()]

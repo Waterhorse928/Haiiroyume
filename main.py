@@ -3,36 +3,34 @@ import random
 import time
 import sys
 
+pause = 0.2
+endTurnPause = 1
+
 #skills
 class Skill():
-    def __init__(self):
-        self.name = ''
-        self.info = ""
-        self.info2 = ""
+    def __init__(self,name="",info="",info2=""):
+        self.name = name
+        self.info = info
+        self.info2 = info2
 
 class OneTargetAttack(Skill):
-    def __init__(self):
-        super().__init__()
-        self.type = 1
-        self.damage = 1
+    def __init__(self,name="",damage=1,cost=0,info="",info2=""):
+        super().__init__(self,name=name,info=info,info2=info2)
+        self.type = "onetarget"
+        self.damage = damage
+        self.cost = cost
 
 class HomingAmulet(OneTargetAttack):
     def __init__(self):
-        super().__init__()
-        self.damage = 4
-        self.cost = 0
-        self.name = 'Homing Amulet'
-        self.info = "Cost: 0 Points"
-        self.info2 = "Deals 4 Damage"
+        super().__init__("Homing Amulet",4,0,"Cost: 0 Points","Deals 4 Damage")
 
 class FantasySeal(OneTargetAttack):
     def __init__(self):
-        super().__init__()
-        self.damage = 10
-        self.cost = 5
-        self.name = 'Fastasy Seal'
-        self.info = "Cost: 5 Points"
-        self.info2 = "Deals 10 Damage"
+        super().__init__("Fantasy Seal",10,5,"Cost: 5 Points","Deals 10 Damage")
+
+class MagicMissile(OneTargetAttack):
+    pass
+    
 
 # All characters have these stats.
 class Character:
@@ -43,13 +41,15 @@ class Character:
 
 class Reimu(Character):
     def __init__(self):
-        super().__init__("Reimu Hakurei", 20)
+        super().__init__("Reimu Hakurei", 32)
         self.sp = 0
-        self.update()
+        self.term = "Points"
         self.skills = [HomingAmulet(),FantasySeal()]
-
+        self.costType = "spend"
+        self.update()
+        
     def update(self):
-        self.info = f'Graze {self.sp}'
+        self.info = f'{self.term} {self.sp}'
     
 class Marisa(Character):
     def __init__(self):
@@ -69,22 +69,11 @@ class Foe:
 class Marisa_Foe(Foe):
     def __init__(self):
         super().__init__("Marisa Kirisame", 50)
-        self.sp = 30
+        self.sp = 20
         self.update()
 
     def update(self):
         self.info = f'Magic {self.sp}'
-
-    def MagicMissile(self, target):
-        target.hp -= 2
-        print(f"{self.name} casts Magic Missile! {target.name} takes 2 damage.")
-
-    def MasterSpark(self, target):
-        damage = 15
-        target.hp -= damage
-        self.sp = 0
-        self.update()
-        print(f"{self.name} casts Master Spark! {target.name} takes {damage} damage. {self.name}'s Magic is now 0.")
 
 def box(text):
     boxSize = 100
@@ -156,7 +145,7 @@ def getPartyList(unit,koed,enemy):
         return party
 
 def chooseTarget(char,skill):
-    if skill.type == 1:
+    if skill.type == "onetarget":
         party = getPartyList(char,True,True)
         if len(party) != 1:
             display = [[f'-- Choose an target for {skill.name} --'],
@@ -169,19 +158,39 @@ def chooseTarget(char,skill):
         return result
     
 def useSkill(char,skill):
-    if skill.type == 1:
+    if skill.type == "onetarget":
         if isinstance(char,Character):
             target = chooseTarget(char,skill)
-        print(f"{char.name} used {skill.name} on {target.name}")
+        damage = skill.damage
+        target.hp -= damage
+        time.sleep(pause)
+        print(f"{char.name} used {skill.name}!")
+        time.sleep(pause)
+        print (f'{target.name} took {damage} damage!')
+        if target.hp <= 0:
+            target.hp = 0
+            time.sleep(pause)
+            print (f'{target.name} is defeated!')
         
 def chooseSkill(char):
     display = [[f'-- Choose an action for {char.name} --'],
-               [str(char.skills.index(s)+1)+ ". " + s.name for s in char.skills],
-               [s.info for s in char.skills],
-               [s.info2 for s in char.skills]]
+            [str(char.skills.index(s)+1)+ ". " + s.name for s in char.skills],
+            [s.info for s in char.skills],
+            [s.info2 for s in char.skills]]
     box(display)
-    result = ask(1,len(char.skills))
-    result = char.skills[result-1]
+    while True:
+        result = ask(1,len(char.skills))
+        result = char.skills[result-1]
+        if char.costType == "spend":
+            if result.cost <= char.sp:
+                char.sp -= result.cost
+                time.sleep(pause)
+                print (f"Spent {result.cost} {char.term}")
+                return result
+            else:
+                time.sleep(pause)
+                print(f"Not enough {char.term}")
+
     return result
 
 def displayBattleScreen():
@@ -202,12 +211,24 @@ def unitTurn(unit):
     if isinstance(unit,Character):
         displayBattleScreen()
         useSkill(unit,chooseSkill(unit))
+    if isinstance(unit,Foe):
+        pass
     
 def battleLoop():
-    while True:
-        unitTurn(chars[0])
-        unitTurn(chars[0])
-        break
+    while len([char for char in chars if char.hp > 0]) > 0 and len([foe for foe in foes if foe.hp > 0]) > 0:
+        for char in chars:
+            if char.hp > 0:
+                unitTurn(char)
+                time.sleep(endTurnPause)
+        for foe in foes:
+            if foe.hp > 0:
+                unitTurn(foe)
+                time.sleep(endTurnPause)
+
+
+
+
+
 
 
 chars = [Reimu()]

@@ -8,28 +8,43 @@ endTurnPause = 1
 
 #skills
 class Skill():
-    def __init__(self,name="",info="",info2=""):
-        self.name = name
-        self.info = info
-        self.info2 = info2
+    def __init__(self):
+        self.name = ''
+        self.info = ""
+        self.info2 = ""
 
 class OneTargetAttack(Skill):
-    def __init__(self,name="",damage=1,cost=0,info="",info2=""):
-        super().__init__(self,name=name,info=info,info2=info2)
+    def __init__(self):
+        super().__init__()
         self.type = "onetarget"
-        self.damage = damage
-        self.cost = cost
+        self.damage = 1
 
 class HomingAmulet(OneTargetAttack):
     def __init__(self):
-        super().__init__("Homing Amulet",4,0,"Cost: 0 Points","Deals 4 Damage")
+        super().__init__()
+        self.damage = 4
+        self.cost = 0
+        self.name = 'Homing Amulet'
+        self.info = f"Cost: {self.cost} Points"
+        self.info2 = f"Deals {self.damage} Damage"
 
 class FantasySeal(OneTargetAttack):
     def __init__(self):
-        super().__init__("Fantasy Seal",10,5,"Cost: 5 Points","Deals 10 Damage")
+        super().__init__()
+        self.damage = 10
+        self.cost = 5
+        self.name = 'Fastasy Seal'
+        self.info = f"Cost: {self.cost} Points"
+        self.info2 = f"Deals {self.damage} Damage"
 
 class MagicMissile(OneTargetAttack):
-    pass
+    def __init__(self):
+        super().__init__()
+        self.damage = 6
+        self.cost = 2
+        self.name = 'Magic Missile'
+        self.info = f"Cost: {self.cost} Magic"
+        self.info2 = f"Deals {self.damage} Damage"
     
 
 # All characters have these stats.
@@ -42,14 +57,11 @@ class Character:
 class Reimu(Character):
     def __init__(self):
         super().__init__("Reimu Hakurei", 32)
-        self.sp = 0
+        self.sp = 12
         self.term = "Points"
         self.skills = [HomingAmulet(),FantasySeal()]
         self.costType = "spend"
-        self.update()
-        
-    def update(self):
-        self.info = f'{self.term} {self.sp}'
+
     
 class Marisa(Character):
     def __init__(self):
@@ -70,10 +82,7 @@ class Marisa_Foe(Foe):
     def __init__(self):
         super().__init__("Marisa Kirisame", 50)
         self.sp = 20
-        self.update()
-
-    def update(self):
-        self.info = f'Magic {self.sp}'
+        self.term = "Magic"
 
 def box(text):
     boxSize = 100
@@ -199,11 +208,11 @@ def displayBattleScreen():
     boxList1 = [[foe.name for foe in enemies],
                 [f"Health {foe.hp}/{foe.hpMax}" for foe in enemies],
                 [healthbar(foe.hp,foe.hpMax,50) for foe in enemies],
-                [foe.info for foe in enemies]]
+                [foe.term+" "+str(foe.sp) for foe in enemies]]
     boxList2 = [[char.name for char in characters],
                 [f"HP {char.hp}/{char.hpMax}" for char in characters],
                 [healthbar(char.hp,char.hpMax,10) for char in characters],
-                [char.info for char in characters]]
+                [char.term+" "+str(char.sp) for char in characters]]
     box(boxList1)
     box(boxList2)
 

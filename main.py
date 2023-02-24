@@ -252,17 +252,16 @@ def useSkill(unit,skill):
             unit.sp += 5
             time.sleep(pause)
             print(f"{unit.name} recovered 5 Magic!")
-
         
 def chooseSkill(char):
     display = [[f'-- Choose an action for {char.name} --'],
-            [str(char.skills.index(s)+1)+ ". " + s.name for s in char.skills],
+            [str(char.skills.index(s))+ ". " + s.name for s in char.skills],
             [s.info for s in char.skills],
             [s.info2 for s in char.skills]]
     box(display)
     while True:
-        result = ask(1,len(char.skills))
-        result = char.skills[result-1]
+        result = ask(0,len(char.skills))
+        result = char.skills[result]
         if result.costType == "spend":
             if result.cost <= char.sp:
                 return result
@@ -280,18 +279,16 @@ def chooseSkill(char):
                 else:
                     print(f"{result.name} is on cooldown for {result.cooldown} more turns.")
 
-    
-
-    return result
-
 def displayBattleScreen():
     characters = [char for char in chars]
     enemies = [foe for foe in foes]
-    boxList1 = [[foe.name for foe in enemies],
+    boxList1 = [["-- Boss --"],
+                [foe.name for foe in enemies],
                 [f"Health {foe.hp}/{foe.hpMax}" for foe in enemies],
                 [healthbar(foe.hp,foe.hpMax,50) for foe in enemies],
                 [foe.term+" "+str(foe.sp) for foe in enemies]]
-    boxList2 = [[char.name for char in characters],
+    boxList2 = [["-- Party --"],
+                [char.name for char in characters],
                 [f"HP {char.hp}/{char.hpMax}" for char in characters],
                 [healthbar(char.hp,char.hpMax,10) for char in characters],
                 [char.term+" "+str(char.sp) for char in characters]]
@@ -318,19 +315,21 @@ def marisaAI(foe):
             foe.nextSkill = Focus()
         else:
             foe.nextSkill = MagicMissile()
+        text = []
         if foe.insightSkill == 0:
-            foe.insightDisplay = f"It's unclear what {foe.name} is doing!"
+            text.append(f"It's hard to tell what {foe.name} is doing.")
+            text.append(f"{foe.name} is grinning.")
+            foe.insightDisplay = random.choice(s) 
         elif foe.insightSkill == 1:
             if isinstance(foe.nextSkill,MagicMissile):
-                str1 = f"{foe.name} is tracking Reimu's movement."
-                str2 = f"{foe.name} is readying an attack."
-                foe.insightDisplay = random.choice([str1, str2]) 
+                text.append(f"{foe.name} is tracking Reimu's movement.")
+                text.append(f"{foe.name} is preparing to fire.")
             elif isinstance(foe.nextSkill,Focus):
-                str1 = f"{foe.name} is looking at her Mini-Hakkero."
-                str2 = f"{foe.name} is closing her eyes."
-                foe.insightDisplay = random.choice([str1, str2])
+                text.append(f"{foe.name} is looking at her Mini-Hakkero.")
+                text.append(f"{foe.name} is closing her eyes.")
         elif foe.insightSkill == 2:
-            foe.insightDisplay = f"{foe.name} is getting ready to use {foe.nextSkill.name}!"
+            text.append(f"{foe.name} is getting ready to use {foe.nextSkill.name}!")
+        foe.insightDisplay = random.choice(text) 
 
 def insightTurn():
     display = []
@@ -339,7 +338,7 @@ def insightTurn():
             if isinstance(foe,Marisa_Foe):
                 marisaAI(foe)
 
-    display = [[foe.insightDisplay for foe in foes]]
+    display = [["-- Insight --"],[foe.insightDisplay for foe in foes]]
     box(display)
     
 def cleanup():
@@ -374,7 +373,11 @@ def battleLoop():
     if not len([foe for foe in foes if foe.hp > 0]) > 0:
         box([["You defeated the boss!"],["You Win!"]])
 
-
+def mainMenu():
+    box([["-- Project Labyrinth --"],
+         ["0. Continue"],
+         ["1. New Game"],
+         ["2. Quit"]])
 
 
 

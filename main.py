@@ -10,6 +10,8 @@ chars = []
 foes = []
 dir_path = os.path.dirname(os.path.abspath(__file__))
 save = 0
+chars = []
+foes = []
 
 #skills
 class Skill():
@@ -376,9 +378,11 @@ def battleLoop():
                 break
         cleanup()
     if not len([char for char in chars if char.hp > 0]) > 0:
-        box([["Your party was defeated!"],["Game Over"]])
+        box([["Your party was defeated!"]])
+        return False
     if not len([foe for foe in foes if foe.hp > 0]) > 0:
-        box([["You defeated the boss!"],["You Win!"]])
+        box([["You defeated the boss!"]])
+        return True
 
 def startStory (file):
     x = open(f"{dir_path}/txt/story/{file}.txt","r",encoding='utf-8')
@@ -394,110 +398,6 @@ def startStory (file):
 
 def mapMenu():
     pass
-
-'''Save File Flags
---Bosses Defeated--
-0. Marisa - Beaten
-1. Robin - Beaten
-2. Chrom - Beaten
-3. Sekibanki - Beaten
-4. Kogasa - Beaten
-5. Kurohebi - Beaten
-6. Medias - Beaten
-7. William - Beaten
-8. Neoma - Beaten
-9. Alfonse - Beaten
-10. Mark - Beaten
-11. Chormatik - Beaten
-12. Tokken - Beaten
-13. Waterhorse928 - Beaten
-14. Hakurei Shrine - Explored
-15.
-16.
-17.
-18.
-19.
-20.
-21.
-22.
-23.
-24.
-25.
-26.
-27.
-28.
-29.
-30.
-31.
-32.
-33.
-34.
-35.
-36.
-37.
-38.
-39.
-40.
-41.
-42.
-43.
-44.
-45.
-46.
-47.
-48.
-49.
-50.
-51.
-52.
-53.
-54.
-55.
-56.
-57.
-58.
-59.
-60.
-61.
-62.
-63.
-64.
-65.
-66.
-67.
-68.
-69.
-70.
-71.
-72.
-73.
-74.
-75.
-76.
-77.
-78.
-79.
-80.
-81.
-82.
-83.
-84.
-85.
-86.
-87.
-88.
-89.
-90.
-91.
-92.
-93.
-94.
-95.
-96.
-97.
-98.
-99.
-'''
 
 def newSave():
     txt_dir = os.path.join(dir_path, "txt", "save")
@@ -524,9 +424,9 @@ def newSave():
     file_number = int(os.path.splitext(os.path.basename(filename))[0])
     return file_number
 
-def readSave(file_number):
+def readSave(position):
     txt_dir = os.path.join(dir_path, "txt", "save")
-    filename = os.path.join(txt_dir, f"{file_number}.txt")
+    filename = os.path.join(txt_dir, f"{save}.txt")
 
     if not os.path.exists(filename):
         raise ValueError(f"File {filename} does not exist")
@@ -534,7 +434,36 @@ def readSave(file_number):
     with open(filename, 'r') as f:
         content = f.read()
 
-    return content
+    try:
+        value = int(content[position])
+    except (ValueError, IndexError):
+        raise ValueError(f"Invalid position {position} for file {filename}")
+
+    return value
+
+def updateSave(position):
+    txt_dir = os.path.join(dir_path, "txt", "save")
+    filename = os.path.join(txt_dir, f"{save}.txt")
+
+    if not os.path.exists(filename):
+        raise ValueError(f"File {filename} does not exist")
+
+    with open(filename, 'r') as f:
+        content = list(f.read())
+
+    # Check if the position is valid
+    if position >= len(content):
+        raise ValueError(f"Invalid position {position} for file {filename}")
+
+    # Update the content at the specified position
+    if content[position] == '0':
+        content[position] = '1'
+    else:
+        content[position] = '0'
+
+    # Write the updated content back to the file
+    with open(filename, 'w') as f:
+        f.write(''.join(content))
 
 def listSaveFiles():
     txt_dir = os.path.join(dir_path, "txt", "save")
@@ -584,7 +513,7 @@ def mainMenu():
             break
 
 def area(place,actions):
-    display = [[f"-- {place} --"]]
+    display = [[f"-- {place} --"],[]]
     n = 0
     for action in actions:
         display[1].append(f'{n}. {action}')
@@ -594,34 +523,61 @@ def area(place,actions):
     return actions[index]
 
 def hakureiShrine():
-    if not readSave(save)[0]:
-        while True:
-            startStory("awake")
-            place = "??????? Shrine"
-            actions = ["Explore"]
-            act = area(place,actions)
-            if act == "Explore":
-                startStory("exploreHakurei")
+    global chars
+    global foes
+    while True:
+        if not readSave(0):
+            if not readSave(14):
+                startStory("awake")
+                place = "??????? Shrine"
+                actions = ["Explore"]
+            elif readSave(17):
+                place = "Hakurei Shrine"
+                actions = ["Re-enter"]
+            elif readSave(15):
+                place = "Hakurei Shrine"
+                actions = ["Enter"]
+            elif readSave(14):
+                place = "??????? Shrine"
+                actions = ["Talk"]
+        elif readSave(0):
+            if readSave(16):
+                place = "Hakurei Shrine"
+                actions = ["Look Around","Back"]
+            elif not readSave(16):
+                place = "Hakurei Shrine"
+                actions = ["Enter the Portal"]
 
-    else:
-        place = "Hakurei Shrine"
-        actions = ["Look Around","Back"]
-        while True:
-            act = area(place,actions)
-            if act == 0:
-                startStory("lookHakurei")
-            if act == 1:
-                break
-                    
+        act = area(place,actions)
+        if act == "Explore":
+            startStory("exploreHakurei")
+            updateSave(14)
+        elif act == "Talk":
+            startStory("talkHakurei")
+            updateSave(15)
+        elif act == "Enter" or "Re-enter":
+            if act == "Enter":
+                startStory("enterHakurei")
+            chars = [Reimu()]
+            foes = [Marisa_Foe()]
+            if battleLoop():
+                startStory("victoryHakurei")
+                updateSave(0)
+            else:
+                startStory("defeatHakurei")
+                updateSave(17)
+        elif act == "Look Around":
+            startStory("lookHakurei")
+        elif act == "Back" or "Enter the Portal":
+            if act == "Enter the Portal":
+                startStory("portalHakurei")
+            break
+              
 def restPoint():
     while True:
-        if readSave(save)[0]:
+        if not readSave(0):
             hakureiShrine()
         else:
-            print(readSave(save)[0])
             break
-
-chars = [Reimu()]
-foes = [Marisa_Foe()]
 
 mainMenu()

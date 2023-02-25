@@ -1,13 +1,14 @@
 import math
 import random
 import time
-import sys
+import os
 
 pause = 0.2
 endTurnPause = 1
 turnNumber = 0
 chars = []
 foes = []
+dir_path = os.path.dirname(os.path.abspath(__file__))
 
 #skills
 class Skill():
@@ -319,7 +320,6 @@ def marisaAI(foe):
         if foe.insightSkill == 0:
             text.append(f"It's hard to tell what {foe.name} is doing.")
             text.append(f"{foe.name} is grinning.")
-            foe.insightDisplay = random.choice(s) 
         elif foe.insightSkill == 1:
             if isinstance(foe.nextSkill,MagicMissile):
                 text.append(f"{foe.name} is tracking Reimu's movement.")
@@ -362,28 +362,107 @@ def battleLoop():
         for char in chars:
             if char.hp > 0:
                 unitTurn(char)
-                time.sleep(endTurnPause)
+                input("\r")
+            if not len([foe for foe in foes if foe.hp > 0]) > 0:
+                break
         for foe in foes:
             if foe.hp > 0:
                 unitTurn(foe)
-                time.sleep(endTurnPause)
+                input("\r")
+            if len([char for char in chars if char.hp > 0]) > 0:
+                break
         cleanup()
     if not len([char for char in chars if char.hp > 0]) > 0:
         box([["Your party was defeated!"],["Game Over"]])
     if not len([foe for foe in foes if foe.hp > 0]) > 0:
         box([["You defeated the boss!"],["You Win!"]])
 
+def startStory (file):
+    x = open(f"{dir_path}/txt/story/{file}.txt","r",encoding='utf-8')
+    y = x.readlines()
+    for z in y:
+        z = z.replace("\n","")
+        print(z, end='')
+        a = input(" ")
+        if a == "skip":
+            return
+        if a == "menu":
+            return "menu"
+
+def mapMenu():
+    pass
+
+'''
+0. Marisa
+1. Robin
+2. Chrom
+3. Sekibanki
+4. Kogasa
+5. Kurohebi
+6. Medias
+7. William
+8. Neoma
+9. Alfonse
+10. Mark
+11. Chormatik
+12. Tokken
+13. Waterhorse928
+'''
+
+def newSave():
+    txt_dir = os.path.join(dir_path, "txt", "save")
+
+    if not os.path.exists(txt_dir):
+        os.makedirs(txt_dir)
+
+    # Get a list of all the txt files in the directory
+    txt_files = [f for f in os.listdir(txt_dir) if f.endswith('.txt')]
+
+    # If there are no txt files, create a new file with name '0.txt'
+    if not txt_files:
+        filename = os.path.join(txt_dir, '0.txt')
+    else:
+        # Otherwise, get the highest numbered file and add 1 to it
+        max_num = max([int(f[:-4]) for f in txt_files])
+        filename = os.path.join(txt_dir, f"{max_num+1}.txt")
+
+    # Create the new file with the calculated name
+    with open(filename, 'w') as f:
+        f.write('OOOOOOOOOOOOOO')
+
+    # Extract the number from the filename and return it
+    file_number = int(os.path.splitext(os.path.basename(filename))[0])
+    return file_number
+
+def readSave(file_number):
+    txt_dir = os.path.join(dir_path, "txt", "save")
+    filename = os.path.join(txt_dir, f"{file_number}.txt")
+
+    if not os.path.exists(filename):
+        raise ValueError(f"File {filename} does not exist")
+
+    with open(filename, 'r') as f:
+        content = f.read()
+
+    return content
+
 def mainMenu():
-    box([["-- Project Labyrinth --"],
-         ["0. Continue"],
-         ["1. New Game"],
-         ["2. Quit"]])
-
-
-
-
+    while True:
+        box([["-- Project Labyrinth --"],
+            ["0. Continue"],
+            ["1. New Game"],
+            ["2. Quit"]])
+        select = ask(0,2)
+        if select == 0:
+            pass
+        if select == 1:
+            saveFile = newSave()
+            startStory("newgame")
+            print(readSave(saveFile))
+        if select == 2:
+            break
 
 chars = [Reimu()]
 foes = [Marisa_Foe()]
 
-battleLoop()
+mainMenu()

@@ -9,6 +9,7 @@ turnNumber = 0
 chars = []
 foes = []
 dir_path = os.path.dirname(os.path.abspath(__file__))
+save = 0
 
 #skills
 class Skill():
@@ -121,6 +122,7 @@ class Marisa(Character):
     def update(self):
         self.info = f'Magic {self.sp}'
 
+#Ze bosses themselves
 class Foe:
     def __init__(self, name="", hp=0):
         self.name = name
@@ -147,6 +149,7 @@ def box(text):
         margin = boxSize//columns
         print ("|",end="")
         for y in text[x]:
+            y = str(y)
             print(f'{y: ^{margin}}',end="")
         print ("|")
     print(f'{"":-^{boxSize+2}}')
@@ -392,21 +395,108 @@ def startStory (file):
 def mapMenu():
     pass
 
-'''
-0. Marisa
-1. Robin
-2. Chrom
-3. Sekibanki
-4. Kogasa
-5. Kurohebi
-6. Medias
-7. William
-8. Neoma
-9. Alfonse
-10. Mark
-11. Chormatik
-12. Tokken
-13. Waterhorse928
+'''Save File Flags
+--Bosses Defeated--
+0. Marisa - Beaten
+1. Robin - Beaten
+2. Chrom - Beaten
+3. Sekibanki - Beaten
+4. Kogasa - Beaten
+5. Kurohebi - Beaten
+6. Medias - Beaten
+7. William - Beaten
+8. Neoma - Beaten
+9. Alfonse - Beaten
+10. Mark - Beaten
+11. Chormatik - Beaten
+12. Tokken - Beaten
+13. Waterhorse928 - Beaten
+14. Hakurei Shrine - Explored
+15.
+16.
+17.
+18.
+19.
+20.
+21.
+22.
+23.
+24.
+25.
+26.
+27.
+28.
+29.
+30.
+31.
+32.
+33.
+34.
+35.
+36.
+37.
+38.
+39.
+40.
+41.
+42.
+43.
+44.
+45.
+46.
+47.
+48.
+49.
+50.
+51.
+52.
+53.
+54.
+55.
+56.
+57.
+58.
+59.
+60.
+61.
+62.
+63.
+64.
+65.
+66.
+67.
+68.
+69.
+70.
+71.
+72.
+73.
+74.
+75.
+76.
+77.
+78.
+79.
+80.
+81.
+82.
+83.
+84.
+85.
+86.
+87.
+88.
+89.
+90.
+91.
+92.
+93.
+94.
+95.
+96.
+97.
+98.
+99.
 '''
 
 def newSave():
@@ -428,7 +518,7 @@ def newSave():
 
     # Create the new file with the calculated name
     with open(filename, 'w') as f:
-        f.write('OOOOOOOOOOOOOO')
+        f.write('0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000')
 
     # Extract the number from the filename and return it
     file_number = int(os.path.splitext(os.path.basename(filename))[0])
@@ -446,20 +536,89 @@ def readSave(file_number):
 
     return content
 
+def listSaveFiles():
+    txt_dir = os.path.join(dir_path, "txt", "save")
+    
+    if not os.path.exists(txt_dir):
+        return []
+    
+    # Get a list of all the txt files in the directory
+    txt_files = [f for f in os.listdir(txt_dir) if f.endswith('.txt')]
+
+    # Extract the number from the filename for each txt file
+    file_numbers = [int(os.path.splitext(f)[0]) for f in txt_files]
+
+    # Sort the file numbers in ascending order
+    file_numbers.sort()
+
+    # Check for gaps in the file numbers and add them to the list
+    save_files = []
+    last_num = -1
+    for num in file_numbers:
+        if num != last_num + 1:
+            for missing_num in range(last_num + 1, num):
+                save_files.append(missing_num)
+        save_files.append(num)
+        last_num = num
+
+    return save_files
+
 def mainMenu():
     while True:
         box([["-- Project Labyrinth --"],
             ["0. Continue"],
             ["1. New Game"],
             ["2. Quit"]])
+        global save
         select = ask(0,2)
         if select == 0:
-            pass
+            l = listSaveFiles()
+            box([["-- Choose a save file --"],[l]])
+            save = askList(l)
+            restPoint()
         if select == 1:
-            saveFile = newSave()
+            save = newSave()
             startStory("newgame")
-            print(readSave(saveFile))
+            restPoint()
         if select == 2:
+            break
+
+def area(place,actions):
+    display = [[f"-- {place} --"]]
+    n = 0
+    for action in actions:
+        display[1].append(f'{n}. {action}')
+        n += 1
+    box(display)
+    index = ask(0, len(actions))
+    return actions[index]
+
+def hakureiShrine():
+    if not readSave(save)[0]:
+        while True:
+            startStory("awake")
+            place = "??????? Shrine"
+            actions = ["Explore"]
+            act = area(place,actions)
+            if act == "Explore":
+                startStory("exploreHakurei")
+
+    else:
+        place = "Hakurei Shrine"
+        actions = ["Look Around","Back"]
+        while True:
+            act = area(place,actions)
+            if act == 0:
+                startStory("lookHakurei")
+            if act == 1:
+                break
+                    
+def restPoint():
+    while True:
+        if readSave(save)[0]:
+            hakureiShrine()
+        else:
+            print(readSave(save)[0])
             break
 
 chars = [Reimu()]

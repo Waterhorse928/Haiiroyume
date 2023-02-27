@@ -74,7 +74,7 @@ class Graze(SelfSupport):
         self.cooldown = 0
         self.info = f"Cooldown: 1 Turn"
         self.info2 = f"Graze incoming attacks"
-        self.info3 = f"Gain points equal to the damage avoided"
+        self.info3 = f"to gain points"
         self.costType = "cooldown"
 
 class MagicMissile(OneTargetAttack):
@@ -98,14 +98,13 @@ class MasterSpark(OneTargetAttack):
         self.info3= f"Dodge incoming attacks"
         self.costType = "spend"
     
-class Focus(SelfSupport):
+class Concentrate(SelfSupport):
     def __init__(self):
         super().__init__()
-        self.name = "Focus"
+        self.name = "Concentrate"
         self.cost = 0
         self.info = f"Cost: {self.cost} Magic"
-        self.info2 = f"Recovers 5 Magic"
-        self.info3= f"20% chance to dodge incoming attacks"
+        self.info2 = f"Recover 5 Magic"
         self.costType = "spend"
 
 class BronzeSword(OneTargetAttack):
@@ -174,10 +173,10 @@ class Reimu(Character):
 
 class Marisa(Character):
     def __init__(self):
-        super().__init__("Marisa Kirisame", 24)
+        super().__init__("Marisa Kirisame", 52)
         self.sp = 0
         self.term = "Magic"
-        self.skills = [Focus(),MagicMissile(),MasterSpark()]
+        self.skills = [Concentrate(),MagicMissile(),MasterSpark()]
         self.dodge = False
 
 #Ze bosses themselves
@@ -301,6 +300,8 @@ def chooseTarget(char,skill):
         return result
 
 def useSkill(unit,skill):
+    if isinstance(skill,MasterSpark):
+        unit.dodge = True
     if skill.costType == "spend":
         unit.sp -= skill.cost
         time.sleep(pause)
@@ -324,6 +325,9 @@ def useSkill(unit,skill):
             target.hp -= damage
             time.sleep(pause)
             print (f'{target.name} took {damage} damage!')
+            if isinstance(skill,Nosferatu):
+                print(f"{unit.name} recovered {round(damage/2)} health!")
+                unit.hp = min(unit.hpMax,unit.hp+round(damage/2))
             if target.hp <= 0:
                 target.hp = 0
                 time.sleep(pause)
@@ -333,7 +337,7 @@ def useSkill(unit,skill):
         print(f"{unit.name} used {skill.name}!")
         if isinstance(skill,Graze):
             unit.graze = True
-        if isinstance(skill,Focus):
+        if isinstance(skill,Concentrate):
             unit.sp += 5
             time.sleep(pause)
             print(f"{unit.name} recovered 5 Magic!")
@@ -415,7 +419,7 @@ def marisaAI(foe):
         foe.dodge = True
         foe.insightSkill = 2
     elif foe.sp < 2:
-        foe.nextSkill = Focus()
+        foe.nextSkill = Concentrate()
     else:
         foe.nextSkill = MagicMissile()
     text = []
@@ -426,7 +430,7 @@ def marisaAI(foe):
         if isinstance(foe.nextSkill,MagicMissile):
             text.append(f"{foe.name} is tracking Reimu's movement.")
             text.append(f"{foe.name} is preparing to fire.")
-        elif isinstance(foe.nextSkill,Focus):
+        elif isinstance(foe.nextSkill,Concentrate):
             text.append(f"{foe.name} is looking at her Mini-Hakkero.")
             text.append(f"{foe.name} is closing her eyes.")
     elif foe.insightSkill == 2:

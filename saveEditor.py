@@ -1,5 +1,5 @@
 clear = []
-marisaBeaten = [0,14,15,16]
+marisaBeaten = [0,14,15]
 
 #----------------------#
 save = 0

@@ -4,7 +4,7 @@ import time
 import os
 
 pause = 0.2
-endTurnPause = 1
+endTurnPause = 0.4
 turnNumber = 0
 chars = []
 foes = []
@@ -31,6 +31,11 @@ class SelfSupport(Skill):
         super().__init__()
         self.type = "selfsupport"
 
+class OneTargetSupport(Skill):
+    def __init__(self):
+        super().__init__()
+        self.type = "onesupport"
+
 class HomingAmulet(OneTargetAttack):
     def __init__(self):
         super().__init__()
@@ -38,7 +43,7 @@ class HomingAmulet(OneTargetAttack):
         self.cost = 0
         self.name = 'Homing Amulet'
         self.info = f"Cost: {self.cost} Points"
-        self.info2 = f"Deals {self.damage} Damage"
+        self.info2 = f"Deals {self.damage} damage"
         self.costType = "spend"
 
 class FantasySeal(OneTargetAttack):
@@ -48,7 +53,7 @@ class FantasySeal(OneTargetAttack):
         self.cost = 5
         self.name = 'Fastasy Seal'
         self.info = f"Cost: {self.cost} Points"
-        self.info2 = f"Deals {self.damage} Damage"
+        self.info2 = f"Deals {self.damage} damage"
         self.costType = "spend"
 
 class FantasyHeaven(OneTargetAttack):
@@ -58,7 +63,7 @@ class FantasyHeaven(OneTargetAttack):
         self.cost = 30
         self.name = 'Fantasy Heaven'
         self.info = f"Cost: {self.cost} Points"
-        self.info2 = f"Deals {self.damage} Damage"
+        self.info2 = f"Deals {self.damage} damage"
         self.costType = "spend"
 
 class Graze(SelfSupport):
@@ -68,7 +73,8 @@ class Graze(SelfSupport):
         self.cooldownTurns = 2
         self.cooldown = 0
         self.info = f"Cooldown: 1 Turn"
-        self.info2 = f"Graze incoming attacks."
+        self.info2 = f"Graze incoming attacks"
+        self.info3 = f"Gain points equal to the damage avoided"
         self.costType = "cooldown"
 
 class MagicMissile(OneTargetAttack):
@@ -78,7 +84,7 @@ class MagicMissile(OneTargetAttack):
         self.cost = 2
         self.name = 'Magic Missile'
         self.info = f"Cost: {self.cost} Magic"
-        self.info2 = f"Deals {self.damage} Damage"
+        self.info2 = f"Deals {self.damage} damage"
         self.costType = "spend"
 
 class MasterSpark(OneTargetAttack):
@@ -88,7 +94,8 @@ class MasterSpark(OneTargetAttack):
         self.cost = 12
         self.name = 'Master Spark'
         self.info = f"Cost: {self.cost} Magic"
-        self.info2 = f"Deals {self.damage} Damage"
+        self.info2 = f"Deals {self.damage} damage"
+        self.info3= f"Dodge incoming attacks"
         self.costType = "spend"
     
 class Focus(SelfSupport):
@@ -98,7 +105,57 @@ class Focus(SelfSupport):
         self.cost = 0
         self.info = f"Cost: {self.cost} Magic"
         self.info2 = f"Recovers 5 Magic"
+        self.info3= f"20% chance to dodge incoming attacks"
         self.costType = "spend"
+
+class BronzeSword(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 3
+        self.uses = 40
+        self.name = 'Bronze Sword'
+        self.info = f"/40 uses"
+        self.info2 = f"Deals {self.damage} Damage"
+        self.costType = "uses"
+
+class LevinSword(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 6
+        self.uses = 8
+        self.name = 'Levin Sword'
+        self.info = f"/{self.uses} uses"
+        self.info2 = f"Deals {self.damage} Damage"
+        self.costType = "uses"
+
+class Nosferatu(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 8
+        self.uses = 4
+        self.name = 'Nosferatu'
+        self.info = f"/{self.uses} uses"
+        self.info2 = f"{self.damage} damage, recover half dealt"
+        self.costType = "uses"
+
+class Thoron(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 14
+        self.uses = 2
+        self.name = 'Thoron'
+        self.info = f"/{self.uses} uses"
+        self.info2 = f"Deals {self.damage} Damage"
+        self.costType = "uses"
+
+class Elixir(OneTargetSupport):
+    def __init__(self):
+        super().__init__()
+        self.uses = 1
+        self.name = 'Elixir'
+        self.info = f"/{self.uses} uses"
+        self.info2 = f"Recovers all health."
+        self.costType = "uses"
 
 # All characters have these stats.
 class Character:
@@ -118,11 +175,10 @@ class Reimu(Character):
 class Marisa(Character):
     def __init__(self):
         super().__init__("Marisa Kirisame", 24)
-        self.sp = 30
-        self.update()
-
-    def update(self):
-        self.info = f'Magic {self.sp}'
+        self.sp = 0
+        self.term = "Magic"
+        self.skills = [Focus(),MagicMissile(),MasterSpark()]
+        self.dodge = False
 
 #Ze bosses themselves
 class Foe:
@@ -135,12 +191,28 @@ class Foe:
         self.insightSkill = 0
         self.insightTarget = 0
         self.insightDisplay = ''
+        self.insight = 0
 
-class Marisa_Foe(Foe):
+class MarisaFoe(Foe):
     def __init__(self):
         super().__init__("Marisa Kirisame", 50)
         self.sp = 20
         self.term = "Magic"
+        self.dodge = False
+
+class RobinFoe(Foe):
+    def __init__(self):
+        super().__init__("Robin", 70)
+        self.sp = ""
+        self.term = ""
+        self.thoron = False
+        self.skills = [BronzeSword(),LevinSword(),Nosferatu(),Thoron(),Elixir()]
+
+class ChromFoe(Foe):
+    def __init__(self):
+        super().__init__("Chrom", 70)
+        self.sp = ""
+        self.term = ""
 
 def box(text):
     boxSize = 100
@@ -213,23 +285,28 @@ def getPartyList(unit,koed,enemy):
         return party
 
 def chooseTarget(char,skill):
-    if skill.type == "onetarget":
-        party = getPartyList(char,True,True)
+    if skill.type == "onetarget" or skill.type == "onesupport":
+        if skill.type == "onetarget":
+            party = getPartyList(char,False,True)
+        elif skill.type == "onesupport":
+            party = getPartyList(char,False,False)
         if len(party) != 1:
             display = [[f'-- Choose an target for {skill.name} --'],
-                       [str(party.index(foe)+1)+ ". " + foe.name for foe in party]]
+                       [str(party.index(unit)+1)+ ". " + unit.name for unit in party]]
             box(display)
             result = ask(1,len(party))
             result = party[result-1]
         else:
             result = party[0]
         return result
-    
+
 def useSkill(unit,skill):
     if skill.costType == "spend":
         unit.sp -= skill.cost
         time.sleep(pause)
         print(f"{unit.name} spends {skill.cost} {unit.term},")
+    elif skill.costType == "uses":
+        skill.uses -= 1
     if skill.type == "onetarget":
         if isinstance(unit,Character):
             target = chooseTarget(unit,skill)
@@ -238,9 +315,11 @@ def useSkill(unit,skill):
         damage = skill.damage
         time.sleep(pause)
         print(f"{unit.name} used {skill.name}!")
-        if isinstance(target,Reimu) and target.graze:
+        if getattr(target, 'graze', False):
             target.sp += damage
             print(f"Reimu gains {damage} points as she grazes it!")
+        elif getattr(target, 'dodge', False):
+            print(f"{target.name} dodges the attack!")
         else:
             target.hp -= damage
             time.sleep(pause)
@@ -258,12 +337,24 @@ def useSkill(unit,skill):
             unit.sp += 5
             time.sleep(pause)
             print(f"{unit.name} recovered 5 Magic!")
+    elif skill.type == "onesupport":
+        if isinstance(unit,Character):
+            target = chooseTarget(unit,skill)
+        if isinstance(unit,Foe):
+            target = unit.nextTarget
+        time.sleep(pause)
+        print(f"{unit.name} used {skill.name}!")
+        if isinstance(skill,Elixir):
+            time.sleep(pause)
+            print(f"{target.name} recovered {target.hpMax - target.hp} health!")
+            target.hp = target.hpMax
         
 def chooseSkill(char):
     display = [[f'-- Choose an action for {char.name} --'],
             [str(char.skills.index(s))+ ". " + s.name for s in char.skills],
-            [s.info for s in char.skills],
-            [s.info2 for s in char.skills]]
+            [s.uses + s.info if s.costType == "uses" else s.info for s in char.skills],
+            [s.info2 for s in char.skills],
+            [s.info3 if hasattr(s, 'info3') else '' for s in char.skills]]
     box(display)
     while True:
         result = ask(0,len(char.skills))
@@ -273,7 +364,7 @@ def chooseSkill(char):
                 return result
             else:
                 time.sleep(pause)
-                print(f"Not enough {char.term}")
+                print(f"Not enough {char.term}.")
         elif result.costType == "cooldown":
             if result.cooldown == 0:
                 result.cooldown = result.cooldownTurns
@@ -284,6 +375,12 @@ def chooseSkill(char):
                     print(f"{result.name} is on cooldown for {result.cooldown} more turn.")
                 else:
                     print(f"{result.name} is on cooldown for {result.cooldown} more turns.")
+        elif result.costType == "uses":
+            if result.uses != 0:
+                return result
+            else:
+                time.sleep(pause)
+                print(f"{result.name} can't be used anymore.")
 
 def displayBattleScreen():
     characters = [char for char in chars]
@@ -292,71 +389,130 @@ def displayBattleScreen():
                 [foe.name for foe in enemies],
                 [f"Health {foe.hp}/{foe.hpMax}" for foe in enemies],
                 [healthbar(foe.hp,foe.hpMax,50) for foe in enemies],
-                [foe.term+" "+str(foe.sp) for foe in enemies]]
+                [str(foe.sp)+" "+foe.term for foe in enemies]]
     boxList2 = [["-- Party --"],
                 [char.name for char in characters],
                 [f"HP {char.hp}/{char.hpMax}" for char in characters],
                 [healthbar(char.hp,char.hpMax,10) for char in characters],
-                [char.term+" "+str(char.sp) for char in characters]]
+                [str(char.sp)+" "+char.term for char in characters]]
     box(boxList1)
     box(boxList2)
 
 def unitTurn(unit):
     if isinstance(unit,Character):
-        displayBattleScreen()
         useSkill(unit,chooseSkill(unit))
     elif isinstance(unit,Foe):
         useSkill(unit,unit.nextSkill)
 
 def marisaAI(foe):
-        foe.insightSkill = random.randint(0, 2)
-        foe.insightTarget = 2
-        foe.nextTarget = chars[0]
-        if turnNumber == 1:
-            foe.nextSkill = MagicMissile()
-        elif turnNumber == 2:
-            foe.nextSkill = MasterSpark()
-            foe.insightSkill = 2
-        elif foe.sp < 2:
-            foe.nextSkill = Focus()
-        else:
-            foe.nextSkill = MagicMissile()
-        text = []
-        if foe.insightSkill == 0:
-            text.append(f"It's hard to tell what {foe.name} is doing.")
-            text.append(f"{foe.name} is grinning.")
-        elif foe.insightSkill == 1:
-            if isinstance(foe.nextSkill,MagicMissile):
-                text.append(f"{foe.name} is tracking Reimu's movement.")
-                text.append(f"{foe.name} is preparing to fire.")
-            elif isinstance(foe.nextSkill,Focus):
-                text.append(f"{foe.name} is looking at her Mini-Hakkero.")
-                text.append(f"{foe.name} is closing her eyes.")
-        elif foe.insightSkill == 2:
-            text.append(f"{foe.name} is getting ready to use {foe.nextSkill.name}!")
-        foe.insightDisplay = random.choice(text) 
+    foe.insightSkill = random.randint(0, 2)
+    foe.insightTarget = 2
+    foe.nextTarget = chars[0]
+    if turnNumber == 1:
+        foe.nextSkill = MagicMissile()
+    elif turnNumber == 2:
+        foe.nextSkill = MasterSpark()
+        foe.dodge = True
+        foe.insightSkill = 2
+    elif foe.sp < 2:
+        foe.nextSkill = Focus()
+    else:
+        foe.nextSkill = MagicMissile()
+    text = []
+    if foe.insightSkill == 0:
+        text.append(f"It's hard to tell what {foe.name} is doing.")
+        text.append(f"{foe.name} is grinning.")
+    elif foe.insightSkill == 1:
+        if isinstance(foe.nextSkill,MagicMissile):
+            text.append(f"{foe.name} is tracking Reimu's movement.")
+            text.append(f"{foe.name} is preparing to fire.")
+        elif isinstance(foe.nextSkill,Focus):
+            text.append(f"{foe.name} is looking at her Mini-Hakkero.")
+            text.append(f"{foe.name} is closing her eyes.")
+    elif foe.insightSkill == 2:
+        text.append(f"{foe.name} is getting ready to use {foe.nextSkill.name}!")
+    foe.insightDisplay = random.choice(text) 
+
+def robinAI(foe):
+    foe.insight = random.randint(0, 5)
+    foe.nextTarget = random.choice(getPartyList(chars[0],False,False))
+    if foe.hp < foe.hpMax/2 and foe.skills[4].uses == 1:
+        foe.nextSkill = foe.skills[4]
+        foe.nextTarget = foe
+        foe.thoron = False
+    elif foe.thoron == True:
+        foe.nextSkill = foe.skills[0]
+        foe.thoron = False
+    else:
+        skills = foe.skills
+        skills = [skill for skill in skills if skill.name != "Elixir"]
+        if foe.hp >= foe.hpMax-4:
+            skills = [skill for skill in skills if skill.name != "Nosferatu"]
+        skills = [c for c in skills if c.uses != 0]
+        foe.nextSkill = random.choice(skills)
+        if isinstance(foe.nextSkill,Thoron):
+            foe.thoron = True
+    text = []
+    if foe.insight == 0:
+        text.append(f"{foe.name} is concealing his next move.")
+        text.append(f"{foe.name} seems to be lost in thought.")
+    elif foe.insight == 1:
+        text.append(f"{foe.name} is planning to use {foe.nextSkill.name} on {foe.nextTarget.name}!")
+    else:
+        if isinstance(foe.nextSkill,BronzeSword):
+            text.append(f"{foe.name} is conserving resources.")
+            text.append(f"{foe.name} is trying to bait a dodge.")
+            text.append(f"{foe.name} is preparing to use a sword.")
+        if isinstance(foe.nextSkill,LevinSword):
+            text.append(f"{foe.name} checks his Levin Sword for damage.")
+            text.append(f"{foe.name} is ready to unleash an electric strike.")
+            text.append(f"{foe.name} is preparing to use a sword.")
+        if isinstance(foe.nextSkill,Nosferatu):
+            text.append(f"{foe.name} is reciting a sinister incantation.")
+            text.append(f"{foe.name} is worried about his condition.")
+            text.append(f"{foe.name} is preparing to use a tome.")
+        if isinstance(foe.nextSkill,Thoron):
+            text.append(f"{foe.name} is about to use his trump card!")
+            text.append(f"{foe.name} is ready to unleash an electric strike.")
+            text.append(f"{foe.name} is preparing to use a tome.")
+        if isinstance(foe.nextSkill,Elixir):
+            text.append(f"{foe.name} is reaching for a vial at his belt.")
+            text.append(f"{foe.name} is worried about his condition.")
+            text.append(f"{foe.name} is trying to bait a dodge.")
+        if isinstance(foe.nextTarget,Reimu):
+            text.append(f"{foe.name} is studying Reimu's movements.")
+        if isinstance(foe.nextTarget,Marisa):
+            text.append(f"{foe.name} is betting Marisa is unprepared.")
+    foe.insightDisplay = random.choice(text) 
 
 def insightTurn():
     display = []
     for foe in foes:
         if foe.hp > 0:
-            if isinstance(foe,Marisa_Foe):
+            if isinstance(foe,MarisaFoe):
                 marisaAI(foe)
-
+            if isinstance(foe,RobinFoe):
+                robinAI(foe)
     display = [["-- Insight --"],[foe.insightDisplay for foe in foes]]
     box(display)
     
 def cleanup():
     for char in chars:
-        if isinstance(char,Reimu) and char.graze:
-                char.graze = False
+        if getattr(char, 'graze', False):
+            char.graze = False
+        if getattr(char, 'dodge', False):
+            char.dodge = False
         for skill in char.skills:
             if skill.costType == "cooldown":
                 if skill.cooldown != 0:
                     skill.cooldown -= 1
 
     for foe in foes:
-        pass
+        if getattr(foe, 'dodge', False):
+            foe.dodge = False
+        if isinstance(foe,RobinFoe):
+            foe.sp = foe.nextSkill.name
+            foe.term = f"{foe.nextSkill.uses}{foe.nextSkill.info}"
 
 def battleLoop():
     global turnNumber
@@ -364,16 +520,19 @@ def battleLoop():
     while len([char for char in chars if char.hp > 0]) > 0 and len([foe for foe in foes if foe.hp > 0]) > 0:
         turnNumber += 1
         insightTurn()
+        displayBattleScreen()
         for char in chars:
             if char.hp > 0:
                 unitTurn(char)
-                input("\r")
+                print()
+                time.sleep(endTurnPause)
             if not len([foe for foe in foes if foe.hp > 0]) > 0:
                 break
         for foe in foes:
             if foe.hp > 0:
                 unitTurn(foe)
-                input("\r")
+                print()
+                time.sleep(endTurnPause)
             if len([char for char in chars if char.hp > 0]) > 0:
                 break
         cleanup()
@@ -512,6 +671,23 @@ def mainMenu():
         if select == 2:
             break
 
+def characterSelect():
+    charList = [Reimu()]
+    if readSave(0):
+        charList.append(Marisa())
+    charInt = [*range(0,len(charList))]
+    charListReturn = []
+    for y in range(0,min(4,len(charList))):
+        display = [["-- Character Select --"]]
+        for x in charInt:
+            display.append([f"{x}. {charList[x].name}"])
+        box(display)
+        n = askList(charInt)
+        charInt.remove(n)
+        charListReturn.append(charList[n])
+        print (f"Selected {charListReturn[y].name}")
+    return charListReturn
+    
 def area(place,actions):
     display = [[f"-- {place} --"],[]]
     n = 0
@@ -521,6 +697,21 @@ def area(place,actions):
     box(display)
     index = ask(0, len(actions))
     return actions[index]
+
+def beginBattle(foe,win,lose):
+    global chars
+    global foes
+    if not readSave(lose):
+        startStory("enterRobin")
+        updateSave(19)
+    chars = characterSelect()
+    foes = [globals()[foe + "Foe"]()]
+    if battleLoop():
+        startStory(f"victory{foe}")
+        updateSave(win)
+    else:
+        startStory(f"defeat{foe}")
+        updateSave(lose)
 
 def hakureiShrine():
     global chars
@@ -536,7 +727,7 @@ def hakureiShrine():
                 actions = ["Re-enter"]
             elif readSave(15):
                 place = "Hakurei Shrine"
-                actions = ["Enter"]
+                actions = ["Enter the Gate"]
             elif readSave(14):
                 place = "??????? Shrine"
                 actions = ["Talk"]
@@ -555,29 +746,61 @@ def hakureiShrine():
         elif act == "Talk":
             startStory("talkHakurei")
             updateSave(15)
-        elif act == "Enter" or "Re-enter":
-            if act == "Enter":
-                startStory("enterHakurei")
-            chars = [Reimu()]
-            foes = [Marisa_Foe()]
-            if battleLoop():
-                startStory("victoryHakurei")
-                updateSave(0)
-            else:
-                startStory("defeatHakurei")
-                updateSave(17)
+        elif act == "Enter the Gate" or act == "Re-enter":
+            beginBattle("Marisa",0,17)
         elif act == "Look Around":
             startStory("lookHakurei")
-        elif act == "Back" or "Enter the Portal":
-            if act == "Enter the Portal":
-                startStory("portalHakurei")
+        elif act == "Back" or act == "Enter the Portal":
             break
-              
+
+def barracks():
+    global chars
+    global foes
+    while True:
+        place = "Shepherds' Barracks"
+        actions = []
+        if not readSave(18):
+            startStory("enterBarracks")
+            updateSave(18)
+        if not readSave(1):
+            actions.append("Enter Robin's Gate")
+            actions.append("Examine Chrom's Gate")
+        elif not readSave(2):
+            actions.append("Enter Chrom's Gate")
+        actions.append("Look Around")
+        actions.append("Back")
+
+        act = area(place,actions)
+        if act == "Enter Robin's Gate":
+            beginBattle("Robin",1,19)
+        elif act == "Examine Chrom's Gate":
+            startStory("examineChromGate")
+        elif act == "Enter Chrom's Gate":
+            beginBattle("Chrom",2,20)
+        elif act == "Look Around":
+            startStory("lookBarracks")
+        elif act == "Back":
+            break
+            
 def restPoint():
     while True:
         if not readSave(0):
             hakureiShrine()
-        else:
+        if not readSave(16):
+            startStory("portalHakurei")
+            updateSave(16)
+        place = "Rest Point"
+        actions = []
+        if readSave(0):
+            actions.append("Hakurei Shrine")
+            actions.append("Shepherds' Barracks")
+        actions.append("Quit")
+        act = area(place,actions)
+        if act == "Hakurei Shrine":
+            hakureiShrine()
+        if act == "Shepherds' Barracks":
+            barracks()
+        if act == "Quit":
             break
-
+        
 mainMenu()

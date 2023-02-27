@@ -33,7 +33,18 @@ def listFlags(file_number):
         "14 Hakurei Shrine - Explored",
         "15 Hakurei Shrine - Talked",
         "16 Entered Rest Point",
-        "17 Hakurei Shrine - Defeat"
+        "17 Marisa - Lost",
+        "18 Barracks - Entered",
+        "19 Robin - Lost",
+        "20 Chrom - Lost",
+        "21 Sekibanki - Lost",
+        "22 Kogasa - Lost",
+        "23 Kurohebi - Lost",
+        "24 Medias - Lost",
+        "25 William - Lost",
+        "26 Neoma - Lost",
+        "27 Alfonse - Lost",
+        "28 Mark - Lost"
     ]
 
     flags = []

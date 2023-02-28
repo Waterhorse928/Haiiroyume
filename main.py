@@ -3,7 +3,7 @@ import random
 import time
 import os
 
-pause = 0.2
+pause = 0
 endTurnPause = 0.4
 turnNumber = 0
 chars = []
@@ -194,14 +194,14 @@ class Foe:
 
 class MarisaFoe(Foe):
     def __init__(self):
-        super().__init__("Marisa Kirisame", 50)
+        super().__init__("Marisa Kirisame", 52)
         self.sp = 20
         self.term = "Magic"
         self.dodge = False
 
 class RobinFoe(Foe):
     def __init__(self):
-        super().__init__("Robin", 70)
+        super().__init__("Robin", 112)
         self.sp = ""
         self.term = ""
         self.thoron = False
@@ -214,7 +214,7 @@ class ChromFoe(Foe):
         self.term = ""
 
 def box(text):
-    boxSize = 100
+    boxSize = 120
     print(f'{"":-^{boxSize+2}}')
     rows = len(text)
     for x in range(0,rows):
@@ -327,7 +327,7 @@ def useSkill(unit,skill):
             print (f'{target.name} took {damage} damage!')
             if isinstance(skill,Nosferatu):
                 print(f"{unit.name} recovered {round(damage/2)} health!")
-                unit.hp = min(unit.hpMax,unit.hp+round(damage/2))
+                unit.hp = min(unit.hpMax,(unit.hp + round(damage/2)))
             if target.hp <= 0:
                 target.hp = 0
                 time.sleep(pause)
@@ -460,6 +460,7 @@ def robinAI(foe):
     if foe.insight == 0:
         text.append(f"{foe.name} is concealing his next move.")
         text.append(f"{foe.name} seems to be lost in thought.")
+        text.append(f"{foe.name} is up to something.")
     elif foe.insight == 1:
         text.append(f"{foe.name} is planning to use {foe.nextSkill.name} on {foe.nextTarget.name}!")
     else:

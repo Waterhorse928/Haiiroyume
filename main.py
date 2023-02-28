@@ -3,8 +3,8 @@ import random
 import time
 import os
 
-pause = 0
-endTurnPause = 0.4
+pause = 0.2
+endTurnPause = 0.8
 turnNumber = 0
 chars = []
 foes = []

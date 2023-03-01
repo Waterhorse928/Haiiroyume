@@ -44,7 +44,11 @@ def listFlags(file_number):
         "25 William - Lost",
         "26 Neoma - Lost",
         "27 Alfonse - Lost",
-        "28 Mark - Lost"
+        "28 Mark - Lost",
+        "29 Human Village - Entered",
+        "30 Devanagara - Entered",
+        "31 Arcton Fort - Entered",
+        "32 My Castle - Entered"
     ]
 
     flags = []

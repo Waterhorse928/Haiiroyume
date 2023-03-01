@@ -1,9 +1,12 @@
 clear = []
-marisaBeaten = [0,14,15]
+marisa = [14,15]
+robin = [0,14,15,18]
+chrom = [0,1,14,15,16,18]
+act2 = [0,1,2,14,15,16,18]
 
 #----------------------#
 save = 0
-update = marisaBeaten
+update = chrom
 #----------------------#
 
 import os

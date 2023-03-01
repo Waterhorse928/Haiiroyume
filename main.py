@@ -10,8 +10,6 @@ chars = []
 foes = []
 dir_path = os.path.dirname(os.path.abspath(__file__))
 save = 0
-chars = []
-foes = []
 
 #skills
 class Skill():
@@ -40,11 +38,10 @@ class HomingAmulet(OneTargetAttack):
     def __init__(self):
         super().__init__()
         self.damage = 4
-        self.cost = 0
         self.name = 'Homing Amulet'
-        self.info = f"Cost: {self.cost} Points"
+        self.info = f"No cost"
         self.info2 = f"Deals {self.damage} damage"
-        self.costType = "spend"
+        self.costType = "free"
 
 class FantasySeal(OneTargetAttack):
     def __init__(self):
@@ -60,7 +57,7 @@ class FantasyHeaven(OneTargetAttack):
     def __init__(self):
         super().__init__()
         self.damage = 40
-        self.cost = 30
+        self.cost = 25
         self.name = 'Fantasy Heaven'
         self.info = f"Cost: {self.cost} Points"
         self.info2 = f"Deals {self.damage} damage"
@@ -102,10 +99,9 @@ class Concentrate(SelfSupport):
     def __init__(self):
         super().__init__()
         self.name = "Concentrate"
-        self.cost = 0
-        self.info = f"Cost: {self.cost} Magic"
+        self.info = f"No cost"
         self.info2 = f"Recover 5 Magic"
-        self.costType = "spend"
+        self.costType = "free"
 
 class BronzeSword(OneTargetAttack):
     def __init__(self):
@@ -134,7 +130,8 @@ class Nosferatu(OneTargetAttack):
         self.uses = 4
         self.name = 'Nosferatu'
         self.info = f"/{self.uses} uses"
-        self.info2 = f"{self.damage} damage, recover half dealt"
+        self.info2 = f"Deals {self.damage} damage"
+        self.info3 = f"Recover half damage dealt"
         self.costType = "uses"
 
 class Thoron(OneTargetAttack):
@@ -156,6 +153,24 @@ class Elixir(OneTargetSupport):
         self.info2 = f"Recovers all health."
         self.costType = "uses"
 
+class StrikeFoe(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 16
+        self.name = 'Exalted Falchion - Strike'
+        self.info = f"No cost"
+        self.info2 = f"Deals {self.damage} damage"      
+        self.costType = "free"  
+
+class ExaltedFalchionFoe(SelfSupport):
+    def __init__(self):
+        super().__init__()
+        self.heal = 20
+        self.name = 'Exalted Falchion - Heal'
+        self.info = f"No cost"
+        self.info2 = f"Recover {self.heal} health"      
+        self.costType = "free"  
+
 # All characters have these stats.
 class Character:
     def __init__(self, name="", hp=0):
@@ -168,7 +183,7 @@ class Reimu(Character):
         super().__init__("Reimu Hakurei", 32)
         self.sp = 0
         self.term = "Points"
-        self.skills = [Graze(),HomingAmulet(),FantasySeal(),FantasyHeaven()]
+        self.skills = [HomingAmulet(),Graze(),FantasySeal(),FantasyHeaven()]
         self.graze = False
 
 class Marisa(Character):
@@ -178,6 +193,13 @@ class Marisa(Character):
         self.term = "Magic"
         self.skills = [Concentrate(),MagicMissile(),MasterSpark()]
         self.dodge = False
+
+class Robin(Character):
+    def __init__(self):
+        super().__init__("Robin", 56)
+        self.sp = ""
+        self.term = ""
+        self.skills = [BronzeSword(),LevinSword(),Nosferatu(),Thoron(),Elixir()]
 
 #Ze bosses themselves
 class Foe:
@@ -209,7 +231,58 @@ class RobinFoe(Foe):
 
 class ChromFoe(Foe):
     def __init__(self):
-        super().__init__("Chrom", 70)
+        super().__init__("Chrom", 120)
+        self.sp = ""
+        self.term = ""
+        self.extraTurns = False
+        self.nextList = []
+        self.targetList = []
+
+class SekibankiFoe(Foe):
+    def __init__(self):
+        super().__init__("Sekibanki", 70)
+        self.sp = ""
+        self.term = ""
+
+class KogasaFoe(Foe):
+    def __init__(self):
+        super().__init__("Kogasa Tatara", 70)
+        self.sp = ""
+        self.term = ""
+
+class KurohebiFoe(Foe):
+    def __init__(self):
+        super().__init__("Kurohebi", 70)
+        self.sp = ""
+        self.term = ""
+
+class MediasFoe(Foe):
+    def __init__(self):
+        super().__init__("Medias Moritake", 70)
+        self.sp = ""
+        self.term = ""
+
+class WilliamFoe(Foe):
+    def __init__(self):
+        super().__init__("William", 70)
+        self.sp = ""
+        self.term = ""
+
+class NeomaFoe(Foe):
+    def __init__(self):
+        super().__init__("Neoma", 70)
+        self.sp = ""
+        self.term = ""
+
+class AlfonseFoe(Foe):
+    def __init__(self):
+        super().__init__("Alfonse Steadsteel", 70)
+        self.sp = ""
+        self.term = ""
+
+class MarkFoe(Foe):
+    def __init__(self):
+        super().__init__("Mark Mapleridge", 70)
         self.sp = ""
         self.term = ""
 
@@ -259,8 +332,9 @@ def askList (numberList):
             return result
 
 def getPartyList(unit,koed,enemy):
+    party = []
     if isinstance(unit,Character):
-        party = []
+
         if enemy:
             for foe in foes:
                 if koed:
@@ -273,15 +347,21 @@ def getPartyList(unit,koed,enemy):
                     party.append(char)
                 elif char.hp > 0:
                     party.append(char)
-        return party
     elif isinstance(unit,Foe):
-        party = []
-        for foe in foes:
-            if koed:
-                party.append(foe) 
-            elif foe.hp > 0:
-                party.append(foe)
-        return party
+
+        if enemy:
+            for char in chars:
+                if koed:
+                    party.append(char)
+                elif char.hp > 0:
+                    party.append(char)
+        else:
+            for foe in foes:
+                if koed:
+                    party.append(foe) 
+                elif foe.hp > 0:
+                    party.append(foe)
+    return party
 
 def chooseTarget(char,skill):
     if skill.type == "onetarget" or skill.type == "onesupport":
@@ -341,6 +421,11 @@ def useSkill(unit,skill):
             unit.sp += 5
             time.sleep(pause)
             print(f"{unit.name} recovered 5 Magic!")
+        if isinstance(skill,ExaltedFalchionFoe):
+            hpBefore = unit.hp
+            unit.hp = min(unit.hpMax,unit.hp+20)
+            time.sleep(pause)
+            print(f"{unit.name} recovered {unit.hp-hpBefore} health!")
     elif skill.type == "onesupport":
         if isinstance(unit,Character):
             target = chooseTarget(unit,skill)
@@ -356,7 +441,7 @@ def useSkill(unit,skill):
 def chooseSkill(char):
     display = [[f'-- Choose an action for {char.name} --'],
             [str(char.skills.index(s))+ ". " + s.name for s in char.skills],
-            [s.uses + s.info if s.costType == "uses" else s.info for s in char.skills],
+            [str(s.uses) + s.info if s.costType == "uses" else s.info for s in char.skills],
             [s.info2 for s in char.skills],
             [s.info3 if hasattr(s, 'info3') else '' for s in char.skills]]
     box(display)
@@ -385,6 +470,8 @@ def chooseSkill(char):
             else:
                 time.sleep(pause)
                 print(f"{result.name} can't be used anymore.")
+        elif result.costType == "free":
+            return result
 
 def displayBattleScreen():
     characters = [char for char in chars]
@@ -406,7 +493,13 @@ def unitTurn(unit):
     if isinstance(unit,Character):
         useSkill(unit,chooseSkill(unit))
     elif isinstance(unit,Foe):
-        useSkill(unit,unit.nextSkill)
+        if getattr(unit, 'extraTurns', False):
+            for x in unit.nextList:
+                unit.nextTarget = x[1]
+                useSkill(unit,x[0])
+            unit.extraTurns = False
+        else:
+            useSkill(unit,unit.nextSkill)
 
 def marisaAI(foe):
     foe.insightSkill = random.randint(0, 2)
@@ -490,6 +583,30 @@ def robinAI(foe):
             text.append(f"{foe.name} is betting Marisa is unprepared.")
     foe.insightDisplay = random.choice(text) 
 
+def chromAI(foe):
+    if len(foe.targetList) == 0:
+        foe.targetList = getPartyList(foe,False,True)
+    target = random.choice(foe.targetList)
+    foe.targetList.remove(target)
+    if foe.hp <= 110:
+        foe.extraTurns = True
+        foe.nextList = [[StrikeFoe(),target],[ExaltedFalchionFoe(),foe]]
+    else:
+        foe.nextSkill = StrikeFoe()
+        foe.nextTarget = target
+    text = []
+    text.append(f"{foe.name} is going to attack {target.name}!")
+    text.append(f"{foe.name} points his sword towards {target.name} in challenge.")
+    text.append(f"{foe.name} is about to engage {target.name}!")
+    text.append(f"{foe.name} prepares to strike {target.name}.")
+    text.append(f"{target.name} is {foe.name}'s next target.")
+    text.append(f"{foe.name} takes a stance facing {target.name}.")
+    text.append(f"{foe.name}'s trying to be subtle. He keeps glancing at {target.name} though.")
+    text.append(f"{foe.name} charges at {target.name}!")
+    text.append(f"{foe.name}'s trying to be subtle. He's succeeding!")
+    text.append(f"{foe.name}'s next target isn't clear.")
+    foe.insightDisplay = random.choice(text) 
+
 def insightTurn():
     display = []
     for foe in foes:
@@ -498,6 +615,8 @@ def insightTurn():
                 marisaAI(foe)
             if isinstance(foe,RobinFoe):
                 robinAI(foe)
+            if isinstance(foe,ChromFoe):
+                chromAI(foe)
     display = [["-- Insight --"],[foe.insightDisplay for foe in foes]]
     box(display)
     
@@ -680,6 +799,8 @@ def characterSelect():
     charList = [Reimu()]
     if readSave(0):
         charList.append(Marisa())
+    if readSave(1):
+        charList.append(Robin())
     charInt = [*range(0,len(charList))]
     charListReturn = []
     for y in range(0,min(4,len(charList))):
@@ -707,8 +828,8 @@ def beginBattle(foe,win,lose):
     global chars
     global foes
     if not readSave(lose):
-        startStory("enterRobin")
-        updateSave(19)
+        startStory(f"enter{foe}")
+        updateSave(lose)
     chars = characterSelect()
     foes = [globals()[foe + "Foe"]()]
     if battleLoop():
@@ -786,7 +907,33 @@ def barracks():
             startStory("lookBarracks")
         elif act == "Back":
             break
-            
+
+def area8(locale,unit1,unit2):
+    global chars
+    global foes
+    while True:
+        place = locale[0]
+        actions = []
+        if not readSave(locale[1]):
+            startStory(f"arrive{locale[2]}")
+            updateSave(locale[1])
+        if not readSave(unit1[1]):
+            actions.append(f"Enter {unit1[0]}'s Gate")
+        if not readSave(unit2[1]):
+            actions.append(f"Enter {unit2[0]}'s Gate")
+        actions.append("Look Around")
+        actions.append("Back")
+
+        act = area(place,actions)
+        if act == f"Enter {unit1[0]}'s Gate":
+            beginBattle(unit1[3],unit1[1],unit1[2])
+        elif act == f"Enter {unit2[0]}'s Gate":
+            beginBattle({unit2[3]},unit2[1],unit2[2])
+        elif act == "Look Around":
+            startStory(f"look{locale[2]}")
+        elif act == "Back":
+            break
+
 def restPoint():
     while True:
         if not readSave(0):
@@ -799,12 +946,27 @@ def restPoint():
         if readSave(0):
             actions.append("Hakurei Shrine")
             actions.append("Shepherds' Barracks")
+        if readSave(1) and readSave(2):
+            actions.append("Human Village")
+            actions.append("Devanagara")
+            actions.append("Arcton Fort")
+            actions.append("Dream Arena")
         actions.append("Quit")
         act = area(place,actions)
         if act == "Hakurei Shrine":
             hakureiShrine()
         if act == "Shepherds' Barracks":
             barracks()
+        if act == "Human Village":
+            area8(["Human Village",29,"Village"],["Sekibanki",3,21,"Sekibanki"],["Kogasa Tatara",4,22,"Kogasa"])
+        if act == "Devanagara":
+            area8(["Devanagara",30,"Devanagara"],["Kurohebi",5,23,"Kurohebi"],["Medias Moritake",6,24,"Medias"]) 
+        if act == "Arcton Fort":
+            area8(["Arcton Fort",31,"Fort"],["William",7,25,"William"],["Neoma",8,26,"Neoma"]) 
+        if act == "Dream Arena":
+            area8(["Dream Arena",30,"Arena"],["Alfonse Steadsteel",9,27,"Alfonse"],["Mark Mapleridge",10,28,"Mark"]) 
+        if act == "My Castle":
+            pass
         if act == "Quit":
             break
         

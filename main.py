@@ -34,6 +34,12 @@ class OneTargetSupport(Skill):
         super().__init__()
         self.type = "onesupport"
 
+class PartyAttack(Skill):
+    def __init__(self):
+        super().__init__()
+        self.type = "partyattack"
+        self.damage = 1
+
 class HomingAmulet(OneTargetAttack):
     def __init__(self):
         super().__init__()
@@ -193,11 +199,53 @@ class FlyingHeadFoe(OneTargetAttack):
     def __init__(self):
         super().__init__()
         self.damage = 10
-        self.name = "Flying Head"
+        self.name = f"Flying Head"
         self.rank = 1
         self.info = f"Required: {self.rank} Head"
         self.info2 = f"Deals {self.damage} damage"      
         self.costType = "rank" 
+
+class RokurokubiFlightFoe(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 18
+        self.name = f"Rokurokubi Flight"
+        self.rank = 3
+        self.info = f"Required: {self.rank} Heads"
+        self.info2 = f"Deals {self.damage} damage"      
+        self.costType = "rank" 
+
+class MultiplicativeHeadFoe(PartyAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 8
+        self.name = f"Multiplicative Head"
+        self.rank = 5
+        self.info = f"Required: {self.rank} Heads"
+        self.info2 = f"Deals {self.damage} damage"  
+        self.info3 = f"to all enemies"    
+        self.costType = "rank" 
+
+class SeventhHeadFoe(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 32
+        self.name = f"Seventh Head"
+        self.rank = 7
+        self.info = f"Required: {self.rank} Heads"
+        self.info2 = f"Deals {self.damage} damage"      
+        self.costType = "rank" 
+
+class DullahanNightFoe(PartyAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 40
+        self.name = f"Dullahan Night"
+        self.cost = 10
+        self.info = f"Cost: {self.cost} Heads"
+        self.info2 = f"Deals {self.damage} damage"  
+        self.info3 = f"to all enemies"    
+        self.costType = "spend" 
 
 # All characters have these stats.
 class Character:
@@ -234,7 +282,7 @@ class Chrom(Character):
         super().__init__("Chrom", 60)
         self.sp = ""
         self.term = ""
-        self.skill = [Strike(),ExaltedFalchion()]
+        self.skills = [Strike(),ExaltedFalchion()]
 
 #Ze bosses themselves
 class Foe:
@@ -275,7 +323,7 @@ class ChromFoe(Foe):
 
 class SekibankiFoe(Foe):
     def __init__(self):
-        super().__init__("Sekibanki", 128)
+        super().__init__("Sekibanki", 96)
         self.sp = 0
         self.term = "Heads"
 
@@ -423,30 +471,44 @@ def useSkill(unit,skill):
         print(f"{unit.name} spends {skill.cost} {unit.term},")
     elif skill.costType == "uses":
         skill.uses -= 1
-    if skill.type == "onetarget":
-        if isinstance(unit,Character):
-            target = chooseTarget(unit,skill)
-        if isinstance(unit,Foe):
-            target = unit.nextTarget
-        damage = skill.damage
+    if skill.type == "onetarget" or skill.type == "partyattack":
+        targetList = []
         time.sleep(pause)
         print(f"{unit.name} used {skill.name}!")
-        if getattr(target, 'graze', False):
-            target.sp += damage
-            print(f"Reimu gains {damage} points as she grazes it!")
-        elif getattr(target, 'dodge', False):
-            print(f"{target.name} dodges the attack!")
-        else:
-            target.hp -= damage
-            time.sleep(pause)
-            print (f'{target.name} took {damage} damage!')
-            if isinstance(skill,Nosferatu):
-                print(f"{unit.name} recovered {round(damage/2)} health!")
-                unit.hp = min(unit.hpMax,(unit.hp + round(damage/2)))
-            if target.hp <= 0:
-                target.hp = 0
+        if skill.type == "onetarget":
+            if isinstance(unit,Character):
+                targetList.append(chooseTarget(unit,skill))
+            if isinstance(unit,Foe):
+                targetList.append(unit.nextTarget)
+        if skill.type == "partyattack":
+            targetList = getPartyList(unit,False,True)
+        for target in targetList:
+            damage = skill.damage
+            if target.term == "Heads" and target.sp != 0:
                 time.sleep(pause)
-                print (f'{target.name} is defeated!')
+                print (f"{target.name} blocks the attack with one of her heads!")
+                target.sp -= 1
+                damage = round(damage/2)
+            if getattr(target, 'graze', False):
+                target.sp += damage
+                print(f"Reimu gains {damage} points as she grazes it!")
+            elif getattr(target, 'dodge', False):
+                print(f"{target.name} dodges the attack!")
+            else:
+                hpBefore = target.hp
+                target.hp -= damage
+                if target.hp <= 0:
+                    target.hp = 0
+                time.sleep(pause)
+                print (f'{target.name} took {hpBefore-target.hp} damage!')
+                if isinstance(skill,Nosferatu):
+                    hpHealed = unit.hp
+                    unit.hp = min(unit.hpMax,(unit.hp + round((hpBefore-target.hp)/2)))
+                    hpHealed = unit.hp - hpHealed
+                    print(f"{unit.name} recovered {hpHealed} health!")
+                if target.hp <= 0:
+                    time.sleep(pause)
+                    print (f'{target.name} is defeated!')
     elif skill.type == "selfsupport":
         time.sleep(pause)
         print(f"{unit.name} used {skill.name}!")
@@ -458,7 +520,7 @@ def useSkill(unit,skill):
             print(f"{unit.name} recovered 5 Magic!")
         if isinstance(skill,ExaltedFalchionFoe or ExaltedFalchion):
             hpBefore = unit.hp
-            unit.hp = min(unit.hpMax,unit.hp+20)
+            unit.hp = min(unit.hpMax,unit.hp+skill.heal)
             time.sleep(pause)
             print(f"{unit.name} recovered {unit.hp-hpBefore} health!")
     elif skill.type == "onesupport":
@@ -539,6 +601,24 @@ def unitTurn(unit):
                 unit.nextTarget = x[1]
                 useSkill(unit,x[0])
             unit.extraTurns = False
+        elif isinstance(unit,SekibankiFoe):
+            time.sleep(pause)
+            if unit.sp == 1:
+                s = ""
+            else:
+                s = "s"
+            print(f"{unit.name} has {unit.sp} Head{s}!")
+            if unit.sp >= 10:
+                unit.nextSkill = DullahanNightFoe()
+            elif unit.sp >= 7:
+                unit.nextSkill = SeventhHeadFoe()
+            elif unit.sp >= 5:
+                unit.nextSkill = MultiplicativeHeadFoe()
+            elif unit.sp >= 3:
+                unit.nextSkill = RokurokubiFlightFoe()
+            else:
+                unit.nextSkill = FlyingHeadFoe()
+            useSkill(unit,unit.nextSkill)
         else:
             useSkill(unit,unit.nextSkill)
 
@@ -646,7 +726,52 @@ def chromAI(foe):
     text.append(f"{foe.name}'s next target isn't clear.")
     foe.insightDisplay = random.choice(text) 
 
-def sekibanki(foe):
+def sekibankiAI(foe):
+    foe.sp += 5
+    foe.insightTarget = random.randint(0, 1)
+    targetWeak = random.choice([True, False])
+    if targetWeak:
+        party = getPartyList(foe,False,True)
+        foe.nextTarget = min(party, key=lambda x: x.hp / x.hpMax)
+    else:
+        foe.nextTarget = random.choice(getPartyList(foe,False,True))
+    text = []
+    if foe.insightTarget <= 0:
+        text.append(f"{foe.name} is going to attack {foe.nextTarget.name}!")
+        text.append(f"{foe.name}'s heads are gathering around {foe.nextTarget.name}.")
+        text.append(f"{foe.name} seems focused on {foe.nextTarget.name}.")
+        if random.choice([True,False]):
+            text.append(f"{foe.name} strikes a dramatic pose pointing at {foe.nextTarget.name}.")
+    else:
+        if foe.sp >=10:
+            text.append(f"{foe.name} wants to use her strongest move.")
+        if targetWeak:
+            text.append(f"{foe.name} is planning to go for the weak link.")
+            text.append(f"{foe.name} is tracking the party's condition.")
+        else:
+            text.append(f"{foe.name}'s heads are hard to keep track of.")
+            text.append(f"{foe.name} is hiding her next attack.")
+    foe.insightDisplay = random.choice(text) 
+
+def kogasaAI(foe):
+    pass
+
+def kurohebiAI(foe):
+    pass
+
+def mediasAI(foe):
+    pass
+
+def williamAI(foe):
+    pass
+
+def neomaAI(foe):
+    pass
+
+def alfonseAI(foe):
+    pass
+
+def markAI(foe):
     pass
 
 def insightTurn():
@@ -659,6 +784,23 @@ def insightTurn():
                 robinAI(foe)
             if isinstance(foe,ChromFoe):
                 chromAI(foe)
+            if isinstance(foe,SekibankiFoe):
+                sekibankiAI(foe)
+            if isinstance(foe,KogasaFoe):
+                kogasaAI(foe)
+            if isinstance(foe,KurohebiFoe):
+                kurohebiAI(foe)
+            if isinstance(foe,MediasFoe):
+                mediasAI(foe)
+            if isinstance(foe,WilliamFoe):
+                williamAI(foe)
+            if isinstance(foe,NeomaFoe):
+                neomaAI(foe)
+            if isinstance(foe,AlfonseFoe):
+                alfonseAI(foe)
+            if isinstance(foe,MarkFoe):
+                markAI(foe)
+
     display = [["-- Insight --"],[foe.insightDisplay for foe in foes]]
     box(display)
     
@@ -843,6 +985,8 @@ def characterSelect():
         charList.append(Marisa())
     if readSave(1):
         charList.append(Robin())
+    if readSave(2):
+        charList.append(Chrom())
     charInt = [*range(0,len(charList))]
     charListReturn = []
     for y in range(0,min(4,len(charList))):

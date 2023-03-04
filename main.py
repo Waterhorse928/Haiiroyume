@@ -171,6 +171,34 @@ class ExaltedFalchionFoe(SelfSupport):
         self.info2 = f"Recover {self.heal} health"      
         self.costType = "free"  
 
+class Strike(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 8
+        self.name = 'Exalted Falchion - Strike'
+        self.info = f"No cost"
+        self.info2 = f"Deals {self.damage} damage"      
+        self.costType = "free"  
+
+class ExaltedFalchion(SelfSupport):
+    def __init__(self):
+        super().__init__()
+        self.heal = 10
+        self.name = 'Exalted Falchion - Heal'
+        self.info = f"No cost"
+        self.info2 = f"Recover {self.heal} health"      
+        self.costType = "free"  
+
+class FlyingHeadFoe(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 10
+        self.name = "Flying Head"
+        self.rank = 1
+        self.info = f"Required: {self.rank} Head"
+        self.info2 = f"Deals {self.damage} damage"      
+        self.costType = "rank" 
+
 # All characters have these stats.
 class Character:
     def __init__(self, name="", hp=0):
@@ -200,6 +228,13 @@ class Robin(Character):
         self.sp = ""
         self.term = ""
         self.skills = [BronzeSword(),LevinSword(),Nosferatu(),Thoron(),Elixir()]
+
+class Chrom(Character):
+    def __init__(self):
+        super().__init__("Chrom", 60)
+        self.sp = ""
+        self.term = ""
+        self.skill = [Strike(),ExaltedFalchion()]
 
 #Ze bosses themselves
 class Foe:
@@ -240,9 +275,9 @@ class ChromFoe(Foe):
 
 class SekibankiFoe(Foe):
     def __init__(self):
-        super().__init__("Sekibanki", 70)
-        self.sp = ""
-        self.term = ""
+        super().__init__("Sekibanki", 128)
+        self.sp = 0
+        self.term = "Heads"
 
 class KogasaFoe(Foe):
     def __init__(self):
@@ -421,7 +456,7 @@ def useSkill(unit,skill):
             unit.sp += 5
             time.sleep(pause)
             print(f"{unit.name} recovered 5 Magic!")
-        if isinstance(skill,ExaltedFalchionFoe):
+        if isinstance(skill,ExaltedFalchionFoe or ExaltedFalchion):
             hpBefore = unit.hp
             unit.hp = min(unit.hpMax,unit.hp+20)
             time.sleep(pause)
@@ -472,6 +507,12 @@ def chooseSkill(char):
                 print(f"{result.name} can't be used anymore.")
         elif result.costType == "free":
             return result
+        elif result.costType == "rank":
+            if result.rank <= char.sp:
+                return result
+            else:
+                time.sleep(pause)
+                print(f"Not enough {char.term}.")
 
 def displayBattleScreen():
     characters = [char for char in chars]
@@ -601,11 +642,12 @@ def chromAI(foe):
     text.append(f"{foe.name} prepares to strike {target.name}.")
     text.append(f"{target.name} is {foe.name}'s next target.")
     text.append(f"{foe.name} takes a stance facing {target.name}.")
-    text.append(f"{foe.name}'s trying to be subtle. He keeps glancing at {target.name} though.")
     text.append(f"{foe.name} charges at {target.name}!")
-    text.append(f"{foe.name}'s trying to be subtle. He's succeeding!")
     text.append(f"{foe.name}'s next target isn't clear.")
     foe.insightDisplay = random.choice(text) 
+
+def sekibanki(foe):
+    pass
 
 def insightTurn():
     display = []

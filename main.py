@@ -284,6 +284,62 @@ class Chrom(Character):
         self.term = ""
         self.skills = [Strike(),ExaltedFalchion()]
 
+class Sekibanki(Character):
+    def __init__(self):
+        super().__init__("Sekibanki", 32)
+        self.sp = 0
+        self.term = "Heads"
+        self.skills = []
+
+class Kogasa(Character):
+    def __init__(self):
+        super().__init__("Kogasa Tatara", 64)
+        self.sp = 0
+        self.term = "Terror"
+        self.skills = []
+
+class Kurohebi(Character):
+    def __init__(self):
+        super().__init__("Kurohebi", 22)
+        self.sp = 5
+        self.term = "Darkness"
+        self.skills = []
+
+class Medias(Character):
+    def __init__(self):
+        super().__init__("Medias Moritake", 62)
+        self.sp = 0
+        self.term = "Momentum"
+        self.skills = []
+
+class William(Character):
+    def __init__(self):
+        super().__init__("William", 46)
+        self.sp = 0
+        self.term = "Fate"
+        self.skills = []
+
+class Neoma(Character):
+    def __init__(self):
+        super().__init__("Neoma", 38)
+        self.sp = 0
+        self.term = "Spirits"
+        self.skills = []
+
+class Alfonse(Character):
+    def __init__(self):
+        super().__init__("Alfonse Steadsteel", 50)
+        self.sp = 0
+        self.term = "Steam"
+        self.skills = []
+
+class Mark(Character):
+    def __init__(self):
+        super().__init__("Mark Mapleridge", 48)
+        self.sp = 20
+        self.term = "Spirit"
+        self.skills = []
+
 #Ze bosses themselves
 class Foe:
     def __init__(self, name="", hp=0):
@@ -730,27 +786,29 @@ def sekibankiAI(foe):
     foe.sp += 5
     foe.insightTarget = random.randint(0, 1)
     targetWeak = random.choice([True, False])
+    party = getPartyList(foe,False,True)
     if targetWeak:
-        party = getPartyList(foe,False,True)
         foe.nextTarget = min(party, key=lambda x: x.hp / x.hpMax)
     else:
-        foe.nextTarget = random.choice(getPartyList(foe,False,True))
+        foe.nextTarget = random.choice(party)
+    party.remove(foe.nextTarget)
     text = []
-    if foe.insightTarget <= 0:
+    if foe.insightTarget == 0:
         text.append(f"{foe.name} is going to attack {foe.nextTarget.name}!")
         text.append(f"{foe.name}'s heads are gathering around {foe.nextTarget.name}.")
         text.append(f"{foe.name} seems focused on {foe.nextTarget.name}.")
         if random.choice([True,False]):
             text.append(f"{foe.name} strikes a dramatic pose pointing at {foe.nextTarget.name}.")
-    else:
-        if foe.sp >=10:
-            text.append(f"{foe.name} wants to use her strongest move.")
+    if foe.insightTarget == 1:
+        if len(party) >= 1:
+            decoy = random.choice(party)
+            fakeList = [foe.nextTarget.name,decoy.name]
+            random.shuffle(fakeList)
+            text.append(f"{foe.name}'s heads are gathering around {fakeList[0]} and {fakeList[1]}.")
         if targetWeak:
             text.append(f"{foe.name} is planning to go for the weak link.")
-            text.append(f"{foe.name} is tracking the party's condition.")
         else:
             text.append(f"{foe.name}'s heads are hard to keep track of.")
-            text.append(f"{foe.name} is hiding her next attack.")
     foe.insightDisplay = random.choice(text) 
 
 def kogasaAI(foe):
@@ -987,16 +1045,32 @@ def characterSelect():
         charList.append(Robin())
     if readSave(2):
         charList.append(Chrom())
-    charInt = [*range(0,len(charList))]
+    if readSave(3):
+        charList.append(Sekibanki())
+    if readSave(4):
+        charList.append(Kogasa())
+    if readSave(5):
+        charList.append(Kurohebi())
+    if readSave(6):
+        charList.append(Medias())
+    if readSave(7):
+        charList.append(William())
+    if readSave(8):
+        charList.append(Neoma())
+    if readSave(9):
+        charList.append(Alfonse())
+    if readSave(10):
+        charList.append(Mark())
+    charInt = [*range(1,len(charList)+1)]
     charListReturn = []
     for y in range(0,min(4,len(charList))):
         display = [["-- Character Select --"]]
         for x in charInt:
-            display.append([f"{x}. {charList[x].name}"])
+            display.append([f"{x}. {charList[x-1].name}"])
         box(display)
         n = askList(charInt)
         charInt.remove(n)
-        charListReturn.append(charList[n])
+        charListReturn.append(charList[n-1])
         print (f"Selected {charListReturn[y].name}")
     return charListReturn
     
@@ -1114,7 +1188,7 @@ def area8(locale,unit1,unit2):
         if act == f"Enter {unit1[0]}'s Gate":
             beginBattle(unit1[3],unit1[1],unit1[2])
         elif act == f"Enter {unit2[0]}'s Gate":
-            beginBattle({unit2[3]},unit2[1],unit2[2])
+            beginBattle(unit2[3],unit2[1],unit2[2])
         elif act == "Look Around":
             startStory(f"look{locale[2]}")
         elif act == "Back":

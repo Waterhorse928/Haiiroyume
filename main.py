@@ -1081,7 +1081,7 @@ def area(place,actions):
         display[1].append(f'{n}. {action}')
         n += 1
     box(display)
-    index = ask(0, len(actions))
+    index = ask(0, len(actions)-1)
     return actions[index]
 
 def beginBattle(foe,win,lose):

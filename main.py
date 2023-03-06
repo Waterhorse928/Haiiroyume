@@ -11,7 +11,7 @@ foes = []
 dir_path = os.path.dirname(os.path.abspath(__file__))
 save = 0
 
-#skills
+#Skill Types
 class Skill():
     def __init__(self):
         self.name = ''
@@ -40,6 +40,7 @@ class PartyAttack(Skill):
         self.type = "partyattack"
         self.damage = 1
 
+#Reimu
 class HomingAmulet(OneTargetAttack):
     def __init__(self):
         super().__init__()
@@ -80,6 +81,7 @@ class Graze(SelfSupport):
         self.info3 = f"to gain points"
         self.costType = "cooldown"
 
+#Marisa
 class MagicMissile(OneTargetAttack):
     def __init__(self):
         super().__init__()
@@ -109,6 +111,7 @@ class Concentrate(SelfSupport):
         self.info2 = f"Recover 5 Magic"
         self.costType = "free"
 
+#Robin
 class BronzeSword(OneTargetAttack):
     def __init__(self):
         super().__init__()
@@ -137,7 +140,7 @@ class Nosferatu(OneTargetAttack):
         self.name = 'Nosferatu'
         self.info = f"/{self.uses} uses"
         self.info2 = f"Deals {self.damage} damage"
-        self.info3 = f"Recover half damage dealt"
+        self.info3 = f"Recover health"
         self.costType = "uses"
 
 class Thoron(OneTargetAttack):
@@ -159,6 +162,7 @@ class Elixir(OneTargetSupport):
         self.info2 = f"Recovers all health."
         self.costType = "uses"
 
+#Chrom
 class StrikeFoe(OneTargetAttack):
     def __init__(self):
         super().__init__()
@@ -195,6 +199,7 @@ class ExaltedFalchion(SelfSupport):
         self.info2 = f"Recover {self.heal} health"      
         self.costType = "free"  
 
+#Sekibanki
 class FlyingHeadFoe(OneTargetAttack):
     def __init__(self):
         super().__init__()
@@ -243,9 +248,100 @@ class DullahanNightFoe(PartyAttack):
         self.name = f"Dullahan Night"
         self.cost = 10
         self.info = f"Cost: {self.cost} Heads"
-        self.info2 = f"Deals {self.damage} damage"  
+        self.info2 = f"Deals Heads*4 damage"  
         self.info3 = f"to all enemies"    
-        self.costType = "spend" 
+        self.costType = "spendall" 
+
+class FlyingHead(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 5
+        self.name = f"Flying Head"
+        self.rank = 1
+        self.info = f"Required: {self.rank} Head"
+        self.info2 = f"Deals {self.damage} damage"      
+        self.costType = "rank" 
+
+class RokurokubiFlight(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 6
+        self.name = f"Rokurokubi Flight"
+        self.rank = 3
+        self.info = f"Required: {self.rank} Heads"
+        self.info2 = f"Deals {self.damage} damage"  
+        self.info3 = f"Gain 1 Head" 
+        self.costType = "rank" 
+
+class MultiplicativeHead(SelfSupport):
+    def __init__(self):
+        super().__init__()
+        self.name = f"Multiplicative Head"
+        self.rank = 5
+        self.info = f"Required: {self.rank} Heads"
+        self.info2 = f"Gain 3 Heads."   
+        self.costType = "rank" 
+
+class SeventhHead(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 14
+        self.name = f"Seventh Head"
+        self.rank = 7
+        self.info = f"Required: {self.rank} Heads"
+        self.info2 = f"Deals {self.damage} damage"      
+        self.costType = "rank" 
+
+class DullahanNight(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 30
+        self.name = f"Dullahan Night"
+        self.cost = 10
+        self.info = f"Cost: {self.cost} Heads"
+        self.info2 = f"Deals x3 damage"
+        self.info3 = f"x = number of Heads"
+        self.costType = "spendall" 
+
+#Kogasa
+class DanmakuFoe(PartyAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 2
+        self.name = 'Danmaku'
+        self.info = f"No cost"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "free"
+
+class RainyNightFoe(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 12
+        self.cost = 15
+        self.name = "A Rainy Night's Ghost Story"
+        self.info = f"Cost: {self.cost} Terror"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
+class NightTrainFoe(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 25
+        self.cost = 30
+        self.name = "A Forgotten Umbrella's Night Train"
+        self.info = f"Cost: {self.cost} Terror"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
+class KarakasaFlash(PartyAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 50
+        self.cost = 60
+        self.name = "Karakasa Surprising Flash"
+        self.info = f"Cost: {self.cost} Terror"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
 
 # All characters have these stats.
 class Character:
@@ -289,7 +385,7 @@ class Sekibanki(Character):
         super().__init__("Sekibanki", 32)
         self.sp = 0
         self.term = "Heads"
-        self.skills = []
+        self.skills = [FlyingHead(),RokurokubiFlight(),MultiplicativeHead(),SeventhHead(),DullahanNight()]
 
 class Kogasa(Character):
     def __init__(self):
@@ -385,9 +481,12 @@ class SekibankiFoe(Foe):
 
 class KogasaFoe(Foe):
     def __init__(self):
-        super().__init__("Kogasa Tatara", 70)
-        self.sp = ""
-        self.term = ""
+        super().__init__("Kogasa Tatara", 192)
+        self.sp = 0
+        self.term = "Terror"
+        self.extraTurns = False
+        self.nextList = []
+        self.targetList = []
 
 class KurohebiFoe(Foe):
     def __init__(self):
@@ -430,13 +529,15 @@ def box(text):
     print(f'{"":-^{boxSize+2}}')
     rows = len(text)
     for x in range(0,rows):
+        if not text[x]:
+            continue
         columns = len(text[x])
         margin = boxSize//columns
-        print ("|",end="")
+        print("|",end="")
         for y in text[x]:
             y = str(y)
             print(f'{y: ^{margin}}',end="")
-        print ("|")
+        print("|")
     print(f'{"":-^{boxSize+2}}')
 
 def percentage(part, whole, size):
@@ -521,10 +622,19 @@ def chooseTarget(char,skill):
 def useSkill(unit,skill):
     if isinstance(skill,MasterSpark):
         unit.dodge = True
+    elif isinstance(skill,DullahanNightFoe):
+        skill.damage = unit.sp*4
+    elif isinstance(skill,DullahanNight):
+        skill.damage = unit.sp*3
     if skill.costType == "spend":
         unit.sp -= skill.cost
         time.sleep(pause)
         print(f"{unit.name} spends {skill.cost} {unit.term},")
+    if skill.costType == "spendall":
+        spent = unit.sp
+        unit.sp == 0
+        time.sleep(pause)
+        print(f"{unit.name} spends {spent} {unit.term},")
     elif skill.costType == "uses":
         skill.uses -= 1
     if skill.type == "onetarget" or skill.type == "partyattack":
@@ -561,10 +671,21 @@ def useSkill(unit,skill):
                     hpHealed = unit.hp
                     unit.hp = min(unit.hpMax,(unit.hp + round((hpBefore-target.hp)/2)))
                     hpHealed = unit.hp - hpHealed
+                    time.sleep(pause)
                     print(f"{unit.name} recovered {hpHealed} health!")
+                if isinstance(skill,RokurokubiFlight):
+                    unit.sp += 1
+                    time.sleep(pause)
+                    print(f"{unit.name} gained 1 Head!")
                 if target.hp <= 0:
                     time.sleep(pause)
                     print (f'{target.name} is defeated!')
+                for x in getPartyList(unit,False,False)+getPartyList(unit,False,True):
+                    if x.term == "Terror":
+                        x.sp += hpBefore-target.hp
+                        time.sleep(pause)
+                        print (f'{x.name} gained {hpBefore-target.hp} Terror!')
+
     elif skill.type == "selfsupport":
         time.sleep(pause)
         print(f"{unit.name} used {skill.name}!")
@@ -574,11 +695,16 @@ def useSkill(unit,skill):
             unit.sp += 5
             time.sleep(pause)
             print(f"{unit.name} recovered 5 Magic!")
-        if isinstance(skill,ExaltedFalchionFoe or ExaltedFalchion):
+        if isinstance(skill, ExaltedFalchionFoe) or isinstance(skill, ExaltedFalchion):
             hpBefore = unit.hp
             unit.hp = min(unit.hpMax,unit.hp+skill.heal)
             time.sleep(pause)
             print(f"{unit.name} recovered {unit.hp-hpBefore} health!")
+        if isinstance(skill,MultiplicativeHead):
+            unit.sp += 3
+            time.sleep(pause)
+            print(f"{unit.name} gained 3 Heads!")
+
     elif skill.type == "onesupport":
         if isinstance(unit,Character):
             target = chooseTarget(unit,skill)
@@ -601,7 +727,7 @@ def chooseSkill(char):
     while True:
         result = ask(0,len(char.skills))
         result = char.skills[result]
-        if result.costType == "spend":
+        if result.costType == "spend" or result.costType == "spendall":
             if result.cost <= char.sp:
                 return result
             else:
@@ -812,7 +938,33 @@ def sekibankiAI(foe):
     foe.insightDisplay = random.choice(text) 
 
 def kogasaAI(foe):
-    pass
+    text = []
+    target = random.choice(getPartyList(foe,False,True))
+    if foe.sp >= 60:
+        foe.nextSkill = KarakasaFlash()
+        foe.nextTarget = target
+        text.append(f"The constant rain abruptly stops falling...")
+        text.append(f"All at once the night is deafeningly silent...")
+    elif foe.sp >= 30  and random.choice([True,False]):
+        foe.extraTurns = True
+        foe.nextList = [[DanmakuFoe(),target],[NightTrainFoe(),target]]
+        text.append(f"The sound of a train starts to fill the night...")
+        text.append(f"{foe.name} is sneaking up behind {target.name}.")
+        text.append(f"{foe.name} thinks that she can scare {target.name}.")
+    elif foe.sp >= 15 and random.choice([True,False]):
+        foe.extraTurns = True
+        foe.nextList = [[DanmakuFoe(),target],[RainyNightFoe(),target]]
+        text.append(f"The rain is getting worse...")
+        text.append(f"{target.name} spots {foe.name} hiding behind a box.")
+        text.append(f"{target.name} can see {foe.name}'s umbrella poking out from around a corner.")
+    else:
+        foe.nextSkill = DanmakuFoe()
+        foe.nextTarget = target
+        if turnNumber == 1:
+            text.append(f"It's {foe.name} is nowhere in sight.")
+        else:
+            text.append(f"The rain contines to fall...")
+    foe.insightDisplay = random.choice(text) 
 
 def kurohebiAI(foe):
     pass
@@ -834,6 +986,12 @@ def markAI(foe):
 
 def insightTurn():
     display = []
+    for char in chars:
+        if char.hp > 0:
+            if isinstance(char,Sekibanki):
+                char.sp += 3
+                time.sleep(pause)
+                print(f"{char.name} gained 3 Heads!")
     for foe in foes:
         if foe.hp > 0:
             if isinstance(foe,MarisaFoe):
@@ -858,7 +1016,6 @@ def insightTurn():
                 alfonseAI(foe)
             if isinstance(foe,MarkFoe):
                 markAI(foe)
-
     display = [["-- Insight --"],[foe.insightDisplay for foe in foes]]
     box(display)
     
@@ -1074,11 +1231,14 @@ def characterSelect():
         print (f"Selected {charListReturn[y].name}")
     return charListReturn
     
-def area(place,actions):
-    display = [[f"-- {place} --"],[]]
+def area(place, actions):
+    display = [[f"-- {place} --"], [], []]  # Initialize the third list for extra actions
     n = 0
     for action in actions:
-        display[1].append(f'{n}. {action}')
+        if n < 4:
+            display[1].append(f"{n}. {action}")
+        else:
+            display[2].append(f"{n}. {action}")
         n += 1
     box(display)
     index = ask(0, len(actions)-1)

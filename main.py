@@ -1266,6 +1266,10 @@ def hakureiShrine():
         if not readSave(0):
             if not readSave(14):
                 startStory("awake")
+                box([["-- Insight --"]])
+                box([["-- Boss --"]])
+                box([["-- Party --"]])
+                startStory("awake2")
                 place = "??????? Shrine"
                 actions = ["Explore"]
             elif readSave(17):

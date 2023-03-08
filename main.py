@@ -2,6 +2,7 @@ import math
 import random
 import time
 import os
+import string
 
 pause = 0.2
 endTurnPause = 0.8
@@ -160,6 +161,7 @@ class Elixir(OneTargetSupport):
         self.name = 'Elixir'
         self.info = f"/{self.uses} uses"
         self.info2 = f"Recovers all health."
+        self.info3 = f"Choose one ally"
         self.costType = "uses"
 
 #Chrom
@@ -333,7 +335,7 @@ class NightTrainFoe(OneTargetAttack):
         self.info2 = f"Deals {self.damage} damage"
         self.costType = "spend"
 
-class KarakasaFlash(PartyAttack):
+class KarakasaFlashFoe(PartyAttack):
     def __init__(self):
         super().__init__()
         self.damage = 50
@@ -343,12 +345,84 @@ class KarakasaFlash(PartyAttack):
         self.info2 = f"Deals {self.damage} damage"
         self.costType = "spend"
 
+class Danmaku(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 1
+        self.name = 'Danmaku'
+        self.info = f"No cost"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "free"
+
+class RainyNight(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 12
+        self.cost = 15
+        self.name = "A Rainy Night's Ghost Story"
+        self.info = f"Cost: {self.cost} Terror"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
+class NightTrain(OneTargetSupport):
+    def __init__(self):
+        super().__init__()
+        self.damage = 25
+        self.cost = 30
+        self.name = "A Forgotten Umbrella's Night Train"
+        self.info = f"Cost: {self.cost} Terror"
+        self.info2 = f"Dodge this turn"
+        self.info3 = f'Choose one ally'
+        self.costType = "spend"
+
+class KarakasaFlash(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 50
+        self.cost = 100
+        self.name = "Karakasa Surprising Flash"
+        self.info = f"Cost: {self.cost} Terror"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
+#Kurohebi
+class BlindShotFoe(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 4
+        self.cost = 1
+        self.name = 'Blind Shot'
+        self.info = f"Cost: {self.cost} Points"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
+class SlitSnakeFoe(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 32
+        self.cost = 1
+        self.name = 'Slit Snake'
+        self.info = f"No cost"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
+class ImperceptibleFoe(PartyAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 24
+        self.cost = 3
+        self.name = 'Imperceptible'
+        self.info = f"No cost"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
 # All characters have these stats.
 class Character:
     def __init__(self, name="", hp=0):
         self.name = name
         self.hp = hp
         self.hpMax = hp
+        self.blind = False
 
 class Reimu(Character):
     def __init__(self):
@@ -392,7 +466,7 @@ class Kogasa(Character):
         super().__init__("Kogasa Tatara", 64)
         self.sp = 0
         self.term = "Terror"
-        self.skills = []
+        self.skills = [Danmaku(),RainyNight(),NightTrain(),KarakasaFlash()]
 
 class Kurohebi(Character):
     def __init__(self):
@@ -448,6 +522,8 @@ class Foe:
         self.insightTarget = 0
         self.insightDisplay = ''
         self.insight = 0
+        self.hidehp = False
+        self.blind = False
 
 class MarisaFoe(Foe):
     def __init__(self):
@@ -490,9 +566,14 @@ class KogasaFoe(Foe):
 
 class KurohebiFoe(Foe):
     def __init__(self):
-        super().__init__("Kurohebi", 70)
-        self.sp = ""
-        self.term = ""
+        super().__init__("Kurohebi",132)
+        self.sp = 10
+        self.term = "Darkness"
+        self.skip = 0
+        self.recover = False
+        self.counter = False
+        self.counterSkill = SlitSnakeFoe()
+        self.hidehp = True
 
 class MediasFoe(Foe):
     def __init__(self):
@@ -570,6 +651,15 @@ def askList (numberList):
             continue
         if result in numberList:
             return result
+
+def garble(s, prob=0.5):
+    # Create a list of garbled characters | string.ascii_letters
+    garbled_chars = [random.choice([" "]) if random.random() < prob else c for c in s]
+
+    # Join the garbled characters back into a string
+    garbled_s = ''.join(garbled_chars)
+    
+    return garbled_s
 
 def getPartyList(unit,koed,enemy):
     party = []
@@ -657,8 +747,22 @@ def useSkill(unit,skill):
                 damage = round(damage/2)
             if getattr(target, 'graze', False):
                 target.sp += damage
+                time.sleep(pause)
                 print(f"Reimu gains {damage} points as she grazes it!")
+            elif hasattr(target, 'counter') and unit in target.counter:
+                time.sleep(pause)
+                print(f"{target.name} anticipated the attack!")
+                time.sleep(pause)
+                print(f"{target.name} dodges and counters!")
+                target.nextTarget = unit
+                useSkill(target,target.counterSkill)
+            elif unit.blind:
+                time.sleep(pause)
+                print(f"{unit.name} can't see!")
+                time.sleep(pause)
+                print(f"{target.name} dodges the attack!")
             elif getattr(target, 'dodge', False):
+                time.sleep(pause)
                 print(f"{target.name} dodges the attack!")
             else:
                 hpBefore = target.hp
@@ -677,6 +781,10 @@ def useSkill(unit,skill):
                     unit.sp += 1
                     time.sleep(pause)
                     print(f"{unit.name} gained 1 Head!")
+                if isinstance(skill,BlindShotFoe) or isinstance(skill,ImperceptibleFoe):
+                    target.blind = 2
+                    time.sleep(pause)
+                    print(f"{target.name} is blinded!")   
                 if target.hp <= 0:
                     time.sleep(pause)
                     print (f'{target.name} is defeated!')
@@ -716,7 +824,11 @@ def useSkill(unit,skill):
             time.sleep(pause)
             print(f"{target.name} recovered {target.hpMax - target.hp} health!")
             target.hp = target.hpMax
-        
+        if isinstance(skill,NightTrain):
+            time.sleep(pause)
+            print(f"{target.name} is hidden!")
+            target.dodge = True
+
 def chooseSkill(char):
     display = [[f'-- Choose an action for {char.name} --'],
             [str(char.skills.index(s))+ ". " + s.name for s in char.skills],
@@ -763,7 +875,7 @@ def displayBattleScreen():
     enemies = [foe for foe in foes]
     boxList1 = [["-- Boss --"],
                 [foe.name for foe in enemies],
-                [f"Health {foe.hp}/{foe.hpMax}" for foe in enemies],
+                [f"Health {foe.hp}/{foe.hpMax}" if not foe.hidehp else garble(f"Health {foe.hp}/{foe.hpMax}",prob = 1.0) for foe in enemies],
                 [healthbar(foe.hp,foe.hpMax,50) for foe in enemies],
                 [str(foe.sp)+" "+foe.term for foe in enemies]]
     boxList2 = [["-- Party --"],
@@ -771,6 +883,10 @@ def displayBattleScreen():
                 [f"HP {char.hp}/{char.hpMax}" for char in characters],
                 [healthbar(char.hp,char.hpMax,10) for char in characters],
                 [str(char.sp)+" "+char.term for char in characters]]
+    if isinstance(foes[0],KurohebiFoe):
+        garbleness = foes[0].sp / 20
+        boxList1 = [[garble(s,prob=garbleness) for s in sublist] for sublist in boxList1]
+        boxList2 = [[garble(s,prob=garbleness) for s in sublist] for sublist in boxList2]
     box(boxList1)
     box(boxList2)
 
@@ -941,7 +1057,7 @@ def kogasaAI(foe):
     text = []
     target = random.choice(getPartyList(foe,False,True))
     if foe.sp >= 60:
-        foe.nextSkill = KarakasaFlash()
+        foe.nextSkill = KarakasaFlashFoe()
         foe.nextTarget = target
         text.append(f"The constant rain abruptly stops falling...")
         text.append(f"All at once the night is deafeningly silent...")
@@ -967,7 +1083,48 @@ def kogasaAI(foe):
     foe.insightDisplay = random.choice(text) 
 
 def kurohebiAI(foe):
-    pass
+    text = []
+    party = getPartyList(foe,False,True)
+    foe.nextTarget = random.choice(party)
+    party.remove(foe.nextTarget)
+    if foe.recover == True:
+        foe.recover = False
+        foe.sp = 10
+    if foe.sp == 0:
+        foe.skip = 1
+        text.append(f"{foe.name} is wide open!")
+        foe.recover = True
+        foe.nextSkill = ""
+    else:
+        skillList = [BlindShotFoe(),BlindShotFoe()]
+        if foe.sp >= 2:
+            skillList.extend([SlitSnakeFoe(),SlitSnakeFoe()])
+        if foe.sp >= 3:
+            skillList.extend([ImperceptibleFoe()])
+        foe.nextSkill = random.choice(skillList)
+    if isinstance(foe.nextSkill,BlindShotFoe):
+        foe.counter = []
+        if len(party) != 0:
+            text.append(f"{foe.name} is feinting at {random.choice(party).name}!")
+            text.append(f"{random.choice(party).name} is out of range of {foe.name}'s attacks.")
+        text.append(f"{foe.name} is targeting {foe.nextTarget.name} next!")
+        text.append(f"{foe.nextTarget.name} is exactly where {foe.name} wants.")
+    elif isinstance(foe.nextSkill,SlitSnakeFoe):
+        if len(party) > 1:
+            foe.counter = [foe.nextTarget,random.choice(party)]
+            text.append(f"{foe.name} is anticipating {foe.counter[0].name} and {foe.counter[1].name} attacks.")
+            text.append(f"{foe.name} is ready to ambush {foe.counter[0].name} and {foe.counter[1].name}!")
+        else:
+            foe.counter = [foe.nextTarget]
+            text.append(f"{foe.name} is anticipating {foe.counter[0].name} attacks.")
+            text.append(f"{foe.name} is ready to ambush {foe.counter[0].name}!")
+        foe.skip = 1
+    elif isinstance(foe.nextSkill,ImperceptibleFoe):
+        foe.counter = []
+        text.append(f"{foe.name} has disappeared out of sight!")
+        text.append(f"{foe.name} is flickering in and out of view.")
+    garbleness = (foe.sp/15)
+    foe.insightDisplay = garble(random.choice(text),prob=garbleness)
 
 def mediasAI(foe):
     pass
@@ -1029,6 +1186,12 @@ def cleanup():
             if skill.costType == "cooldown":
                 if skill.cooldown != 0:
                     skill.cooldown -= 1
+        if char.blind == 2:
+            char.blind = True
+        elif char.blind:
+            char.blind = False
+            time.sleep(pause)
+            print(f"{char.name} recovered from blindness!")
 
     for foe in foes:
         if getattr(foe, 'dodge', False):
@@ -1036,6 +1199,10 @@ def cleanup():
         if isinstance(foe,RobinFoe):
             foe.sp = foe.nextSkill.name
             foe.term = f"{foe.nextSkill.uses}{foe.nextSkill.info}"
+        if foe.blind:
+            foe.blind = False
+            time.sleep(pause)
+            print(f"{foe.name} recovered from blindness!")
 
 def battleLoop():
     global turnNumber
@@ -1046,16 +1213,22 @@ def battleLoop():
         displayBattleScreen()
         for char in chars:
             if char.hp > 0:
-                unitTurn(char)
-                print()
-                time.sleep(endTurnPause)
+                if hasattr(char, 'skip') and getattr(char, 'skip') > 0:
+                    char.skip -= 1
+                else:
+                    unitTurn(char)
+                    print()
+                    time.sleep(endTurnPause)
             if not len([foe for foe in foes if foe.hp > 0]) > 0:
                 break
         for foe in foes:
             if foe.hp > 0:
-                unitTurn(foe)
-                print()
-                time.sleep(endTurnPause)
+                if hasattr(foe, 'skip') and getattr(foe, 'skip') > 0:
+                    foe.skip -= 1
+                else:
+                    unitTurn(foe)
+                    print()
+                    time.sleep(endTurnPause)
             if len([char for char in chars if char.hp > 0]) > 0:
                 break
         cleanup()

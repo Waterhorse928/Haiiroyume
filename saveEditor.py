@@ -8,7 +8,7 @@ kurohebi = [0,1,2,3,4,14,15,16,18,29]
 
 #----------------------#
 save = 0
-update = kogasa
+update = kurohebi
 #----------------------#
 
 import os

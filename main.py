@@ -41,6 +41,11 @@ class PartyAttack(Skill):
         self.type = "partyattack"
         self.damage = 1
 
+class OneTargetDebuff(Skill):
+    def __init__(self):
+        super().__init__()
+        self.type = "onedebuff"
+
 #Reimu
 class HomingAmulet(OneTargetAttack):
     def __init__(self):
@@ -416,6 +421,97 @@ class ImperceptibleFoe(PartyAttack):
         self.info2 = f"Deals {self.damage} damage"
         self.costType = "spend"
 
+class BlindShot(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 2
+        self.cost = 0
+        self.name = 'Blind Shot'
+        self.info = f"No cost"
+        self.info2 = f"Deals {self.damage} damage"
+        self.info3 = f"10% chance to blind"
+        self.costType = "free"
+
+class SlitSnake(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 12
+        self.cost = 1
+        self.name = 'Slit Snake'
+        self.info = f"Cost: {self.cost} Darkness"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
+class Imperceptible(OneTargetDebuff):
+    def __init__(self):
+        super().__init__()
+        self.cost = 3
+        self.name = 'Imperceptible'
+        self.info = f"Cost: {self.cost} Darkness"
+        self.info2 = f"Blinds the target"
+        self.costType = "spend"
+
+#Medias
+class EmperorDanceFoe(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 20
+        self.cost = 0
+        self.name = "Emperor Dance"
+        self.info = f"Cost: {self.cost} Momentum"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "free"
+
+class PenguinHighwayFoe(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 40
+        self.cost = 10
+        self.name = "Penguin Highway"
+        self.info = f"Cost: {self.cost} Momentum"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
+class EmperorsClawFoe(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 60
+        self.cost = 30
+        self.name = "Emperor's Claw"
+        self.info = f"Cost: {self.cost} Momentum"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
+class EmperorDance(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 3
+        self.cost = 0
+        self.name = "Emperor Dance"
+        self.info = f"No cost"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "free"
+
+class PenguinHighway(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 10
+        self.cost = 9
+        self.name = "Penguin Highway"
+        self.info = f"Cost: {self.cost} Momentum"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
+class EmperorsClaw(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 20
+        self.cost = 20
+        self.name = "Emperor's Claw"
+        self.info = f"Cost: {self.cost} Momentum"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
 # All characters have these stats.
 class Character:
     def __init__(self, name="", hp=0):
@@ -473,7 +569,8 @@ class Kurohebi(Character):
         super().__init__("Kurohebi", 22)
         self.sp = 5
         self.term = "Darkness"
-        self.skills = []
+        self.skills = [BlindShot(),SlitSnake(),Imperceptible()]
+        self.recover = False
 
 class Medias(Character):
     def __init__(self):
@@ -577,9 +674,11 @@ class KurohebiFoe(Foe):
 
 class MediasFoe(Foe):
     def __init__(self):
-        super().__init__("Medias Moritake", 70)
-        self.sp = ""
-        self.term = ""
+        super().__init__("Medias Moritake",248)
+        self.sp = 0
+        self.term = "Momentum"
+        self.deflection = False
+        self.hit = True
 
 class WilliamFoe(Foe):
     def __init__(self):
@@ -694,8 +793,8 @@ def getPartyList(unit,koed,enemy):
     return party
 
 def chooseTarget(char,skill):
-    if skill.type == "onetarget" or skill.type == "onesupport":
-        if skill.type == "onetarget":
+    if skill.type == "onetarget" or skill.type == "onesupport" or skill.type == "onedebuff":
+        if skill.type == "onetarget" or skill.type == "onedebuff":
             party = getPartyList(char,False,True)
         elif skill.type == "onesupport":
             party = getPartyList(char,False,False)
@@ -722,7 +821,7 @@ def useSkill(unit,skill):
         print(f"{unit.name} spends {skill.cost} {unit.term},")
     if skill.costType == "spendall":
         spent = unit.sp
-        unit.sp == 0
+        unit.sp = 0
         time.sleep(pause)
         print(f"{unit.name} spends {spent} {unit.term},")
     elif skill.costType == "uses":
@@ -745,6 +844,24 @@ def useSkill(unit,skill):
                 print (f"{target.name} blocks the attack with one of her heads!")
                 target.sp -= 1
                 damage = round(damage/2)
+            if isinstance(target,Kurohebi) and target.sp != 0:
+                time.sleep(pause)
+                print (f"{target.name} is cloaked in darkness!")
+                target.sp -= 1
+                target.dodge = True
+            if getattr(unit, "deflection", False):
+                if getattr(target, 'graze', False):
+                    time.sleep(pause)
+                    print(f"{unit.name} caught {target.name}'s dodge!")
+                    target.graze = False
+                elif getattr(target, 'dodge', False):
+                    time.sleep(pause)
+                    print(f"{unit.name} caught {target.name}'s dodge!")
+                    target.dodge = False
+                else:
+                    time.sleep(pause)
+                    print(f"{unit.name} overshot {target.name} trying to read a dodge!")
+                    return
             if getattr(target, 'graze', False):
                 target.sp += damage
                 time.sleep(pause)
@@ -784,10 +901,19 @@ def useSkill(unit,skill):
                 if isinstance(skill,BlindShotFoe) or isinstance(skill,ImperceptibleFoe):
                     target.blind = 2
                     time.sleep(pause)
-                    print(f"{target.name} is blinded!")   
+                    print(f"{target.name} is blinded!")
+                if isinstance(skill,BlindShot):
+                    if random.random() <= 0.1:
+                        target.blind = 2
+                        time.sleep(pause)
+                        print(f"{target.name} is blinded!")  
                 if target.hp <= 0:
                     time.sleep(pause)
                     print (f'{target.name} is defeated!')
+                if unit.term == "Momentum":
+                    unit.sp += hpBefore-target.hp
+                    time.sleep(pause)
+                    print (f'{unit.name} gained {hpBefore-target.hp} Momentum!')
                 for x in getPartyList(unit,False,False)+getPartyList(unit,False,True):
                     if x.term == "Terror":
                         x.sp += hpBefore-target.hp
@@ -828,6 +954,18 @@ def useSkill(unit,skill):
             time.sleep(pause)
             print(f"{target.name} is hidden!")
             target.dodge = True
+    
+    elif skill.type == "onedebuff":
+        if isinstance(unit,Character):
+            target = chooseTarget(unit,skill)
+        if isinstance(unit,Foe):
+            target = unit.nextTarget
+        time.sleep(pause)
+        print(f"{unit.name} used {skill.name}!")
+        if isinstance(skill,Imperceptible):
+            target.blind = 2
+            time.sleep(pause)
+            print(f"{target.name} is blinded!") 
 
 def chooseSkill(char):
     display = [[f'-- Choose an action for {char.name} --'],
@@ -892,6 +1030,11 @@ def displayBattleScreen():
 
 def unitTurn(unit):
     if isinstance(unit,Character):
+        if isinstance(unit,Kurohebi):
+            if unit.sp == 0 and unit.recover == False:
+                unit.recover = True
+                print(f"{unit.name} spends the turn recovering.")
+                return
         useSkill(unit,chooseSkill(unit))
     elif isinstance(unit,Foe):
         if getattr(unit, 'extraTurns', False):
@@ -1127,7 +1270,66 @@ def kurohebiAI(foe):
     foe.insightDisplay = garble(random.choice(text),prob=garbleness)
 
 def mediasAI(foe):
-    pass
+    text = []
+    party = getPartyList(foe,False,True)
+    random.shuffle(party)
+    target = party.pop()
+    foe.nextTarget = target
+    if len(party) != 0:
+        decoy = party.pop()
+        names = [target.name,decoy.name]
+        random.shuffle(names)
+    else:
+        decoy = False
+        names = None
+    foe.deflection = random.choice([True, False, False, False])
+    if foe.deflection:
+        foe.hit = False
+    else:
+        foe.hit = True
+    if foe.sp >= 30:
+        foe.nextSkill = EmperorsClawFoe()
+        foe.nextTarget = target
+        foe.insight = random.randint(0, 10)
+    elif foe.sp >= 10:
+        foe.nextSkill = PenguinHighwayFoe()
+        foe.nextTarget = target
+        foe.insight = random.randint(0, 6)
+    else:
+        foe.nextSkill = EmperorDanceFoe()
+        foe.nextTarget = target
+        foe.insight = random.randint(0, 3)
+    if foe.insight in [0,3]:
+        if foe.deflection:
+            text.append(f"{foe.name} is aiming for {target.name}'s dodge!")
+            text.append(f"{foe.name} is leading their attack for {target.name}.")
+        else:
+            text.append(f"{foe.name} is aiming straight for {target.name}!")
+            text.append(f"{foe.name}'s next target is {target.name}.")
+    elif foe.insight in [1,5,9]:
+        text.append(f"{foe.name}'s movement is too confusing to follow!")
+        text.append(f"{foe.name} is ricocheting unpredictably!")
+    elif foe.insight in [2,6,10]:
+        if decoy != False:
+            text.append(f"{foe.name} is aiming for {names[0]} or {names[1]}!")
+            text.append(f"{foe.name} might attack {names[0]} or {names[1]}.")
+        if foe.deflection:
+            text.append(f"{foe.name} is trying to lead their attack to catch a dodge!")
+            text.append(f"{foe.name} isn't making a direct attack.")
+        else:
+            text.append(f"{foe.name} is going for a direct attack!")
+            text.append(f"{foe.name}'s aim is undeviating!")
+    elif foe.insight in [4,7,8]:
+        if isinstance(foe.nextSkill,EmperorsClawFoe):
+            text.append(f"{foe.name} is sliding too fast to keep track of!")
+            text.append(f"You've lost sight of {foe.name}...")
+        elif isinstance(foe.nextSkill,PenguinHighwayFoe):
+            text.append(f"{foe.name} is sliding very quickly.")
+            text.append(f"{foe.name} is moving at a breakneck pace.")
+        elif isinstance(foe.nextSkill,EmperorDanceFoe):
+            text.append(f"{foe.name} is sliding around.")
+            text.append(f"{foe.name} is moving at a decent speed.")
+    foe.insightDisplay = random.choice(text)
 
 def williamAI(foe):
     pass
@@ -1149,6 +1351,12 @@ def insightTurn():
                 char.sp += 3
                 time.sleep(pause)
                 print(f"{char.name} gained 3 Heads!")
+            if isinstance(char,Kurohebi):
+                if char.sp == 0 and char.recover == True:
+                    char.recover = False
+                    char.sp = 5
+                    time.sleep(pause)
+                    print(f"{char.name} recovered 5 Darkness!")
     for foe in foes:
         if foe.hp > 0:
             if isinstance(foe,MarisaFoe):

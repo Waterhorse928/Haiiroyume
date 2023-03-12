@@ -1448,6 +1448,7 @@ def battleLoop():
         return True
 
 def startStory (file):
+    return
     x = open(f"{dir_path}/txt/story/{file}.txt","r",encoding='utf-8')
     y = x.readlines()
     for z in y:

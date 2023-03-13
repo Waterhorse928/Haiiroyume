@@ -425,7 +425,6 @@ class BlindShot(OneTargetAttack):
     def __init__(self):
         super().__init__()
         self.damage = 2
-        self.cost = 0
         self.name = 'Blind Shot'
         self.info = f"No cost"
         self.info2 = f"Deals {self.damage} damage"
@@ -496,7 +495,7 @@ class PenguinHighway(OneTargetAttack):
     def __init__(self):
         super().__init__()
         self.damage = 10
-        self.cost = 9
+        self.cost = 5
         self.name = "Penguin Highway"
         self.info = f"Cost: {self.cost} Momentum"
         self.info2 = f"Deals {self.damage} damage"
@@ -505,11 +504,42 @@ class PenguinHighway(OneTargetAttack):
 class EmperorsClaw(OneTargetAttack):
     def __init__(self):
         super().__init__()
-        self.damage = 20
+        self.damage = 30
         self.cost = 20
         self.name = "Emperor's Claw"
         self.info = f"Cost: {self.cost} Momentum"
         self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
+#William
+class WarpFoe(OneTargetDebuff):
+    def __init__(self):
+        super().__init__()
+        self.cost = 1
+        self.name = "Warp"
+        self.info = f"Cost: {self.cost} Fate"
+        self.info2 = f"Redirects the target's attack"
+        self.costType = "spend"
+
+class EllightFoe(PartyAttack):
+    def __init__(self):
+        super().__init__()
+        self.cost = 3
+        self.damage = 20
+        self.name = "Ellight"
+        self.info = f"Cost: {self.cost} Fate"
+        self.info2 = f"Deals {self.damage} damage"
+        self.info3 = f"to all enemies"
+        self.costType = "spend"
+
+class HealFoe(SelfSupport):
+    def __init__(self):
+        super().__init__()
+        self.cost = 9
+        self.heal  = 60
+        self.name = "Heal"
+        self.info = f"Cost: {self.cost} Fate"
+        self.info2 = f"Recovers {self.heal} health"
         self.costType = "spend"
 
 # All characters have these stats.
@@ -519,6 +549,7 @@ class Character:
         self.hp = hp
         self.hpMax = hp
         self.blind = False
+        self.redirect = None
 
 class Reimu(Character):
     def __init__(self):
@@ -577,7 +608,7 @@ class Medias(Character):
         super().__init__("Medias Moritake", 62)
         self.sp = 0
         self.term = "Momentum"
-        self.skills = []
+        self.skills = [EmperorDance(),PenguinHighway(),EmperorsClaw()]
 
 class William(Character):
     def __init__(self):
@@ -621,6 +652,7 @@ class Foe:
         self.insight = 0
         self.hidehp = False
         self.blind = False
+        self.redirect = None
 
 class MarisaFoe(Foe):
     def __init__(self):
@@ -682,9 +714,10 @@ class MediasFoe(Foe):
 
 class WilliamFoe(Foe):
     def __init__(self):
-        super().__init__("William", 70)
-        self.sp = ""
-        self.term = ""
+        super().__init__("William", 138)
+        self.sp = 3
+        self.term = "Fate"
+        self.skip = 0
 
 class NeomaFoe(Foe):
     def __init__(self):
@@ -809,6 +842,11 @@ def chooseTarget(char,skill):
         return result
 
 def useSkill(unit,skill):
+    for x in getPartyList(unit,False,False)+getPartyList(unit,False,True):
+        if x.term == "Fate":
+            x.sp += 1
+            time.sleep(pause)
+            print(f"{x.name} gained 1 Fate!")
     if isinstance(skill,MasterSpark):
         unit.dodge = True
     elif isinstance(skill,DullahanNightFoe):
@@ -835,16 +873,15 @@ def useSkill(unit,skill):
                 targetList.append(chooseTarget(unit,skill))
             if isinstance(unit,Foe):
                 targetList.append(unit.nextTarget)
+            if unit.redirect:
+                targetList = [unit.redirect]
+                time.sleep(pause)
+                print(f"{unit.name}'s attack is redirected at {unit.redirect.name}!")
         if skill.type == "partyattack":
             targetList = getPartyList(unit,False,True)
         for target in targetList:
             damage = skill.damage
-            if target.term == "Heads" and target.sp != 0:
-                time.sleep(pause)
-                print (f"{target.name} blocks the attack with one of her heads!")
-                target.sp -= 1
-                damage = round(damage/2)
-            if isinstance(target,Kurohebi) and target.sp != 0:
+            if isinstance(target,Kurohebi) and target.sp != 0 and unit.blind == False and getattr(target, 'dodge', False) == False:
                 time.sleep(pause)
                 print (f"{target.name} is cloaked in darkness!")
                 target.sp -= 1
@@ -881,6 +918,11 @@ def useSkill(unit,skill):
             elif getattr(target, 'dodge', False):
                 time.sleep(pause)
                 print(f"{target.name} dodges the attack!")
+            elif target.term == "Heads" and target.sp != 0:
+                time.sleep(pause)
+                print (f"{target.name} blocks the attack with one of her heads!")
+                target.sp -= 1
+                damage = round(damage/2)
             else:
                 hpBefore = target.hp
                 target.hp -= damage
@@ -929,7 +971,7 @@ def useSkill(unit,skill):
             unit.sp += 5
             time.sleep(pause)
             print(f"{unit.name} recovered 5 Magic!")
-        if isinstance(skill, ExaltedFalchionFoe) or isinstance(skill, ExaltedFalchion):
+        if isinstance(skill, ExaltedFalchionFoe) or isinstance(skill, ExaltedFalchion) or isinstance(skill, HealFoe):
             hpBefore = unit.hp
             unit.hp = min(unit.hpMax,unit.hp+skill.heal)
             time.sleep(pause)
@@ -938,6 +980,7 @@ def useSkill(unit,skill):
             unit.sp += 3
             time.sleep(pause)
             print(f"{unit.name} gained 3 Heads!")
+        
 
     elif skill.type == "onesupport":
         if isinstance(unit,Character):
@@ -965,7 +1008,11 @@ def useSkill(unit,skill):
         if isinstance(skill,Imperceptible):
             target.blind = 2
             time.sleep(pause)
-            print(f"{target.name} is blinded!") 
+            print(f"{target.name} is blinded!")
+        if isinstance(skill,WarpFoe):
+            target.redirect = unit.warpTarget
+            #time.sleep(pause)
+            #print(f"{target.name}'s attacks are being redirected!")
 
 def chooseSkill(char):
     display = [[f'-- Choose an action for {char.name} --'],
@@ -1220,7 +1267,7 @@ def kogasaAI(foe):
         foe.nextSkill = DanmakuFoe()
         foe.nextTarget = target
         if turnNumber == 1:
-            text.append(f"It's {foe.name} is nowhere in sight.")
+            text.append(f"{foe.name} is nowhere in sight.")
         else:
             text.append(f"The rain contines to fall...")
     foe.insightDisplay = random.choice(text) 
@@ -1332,7 +1379,31 @@ def mediasAI(foe):
     foe.insightDisplay = random.choice(text)
 
 def williamAI(foe):
-    pass
+    text = []
+    party = getPartyList(foe,False,True)
+    random.shuffle(party)
+    target = party.pop()
+    foe.nextTarget = target
+    if len(party) != 0:
+        redirect = party.pop()
+        foe.warpTarget = redirect
+        useSkill(foe,WarpFoe())
+        text.append(f"{foe.name} is redirecting {target.name}'s attack at {redirect.name}!")
+        text.append(f"{target.name}'s attacks will hit {redirect.name} instead of {foe.name}.")
+        text.append(f"{foe.name} used Warp on {target.name}!")
+        text.append(f"{foe.name} is changing the target of {target.name}'s attacks!")
+        text.append(f"{redirect.name} is the target of whoever got warped.")
+        text.append(f"{foe.name} is redirecting someone's attack.")
+    if foe.sp >= 9:
+        foe.nextSkill = HealFoe()
+        text.append(f"{foe.name} is going to heal himself!")
+    elif foe.sp >= 3:
+        foe.nextSkill = EllightFoe()
+        text.append(f"{foe.name} is using his Ellight tome.")
+    else:
+        foe.skip = 1
+        text.append(f"{foe.name} doesn't have enough Fate.")
+    foe.insightDisplay = random.choice(text)
 
 def neomaAI(foe):
     pass
@@ -1400,6 +1471,10 @@ def cleanup():
             char.blind = False
             time.sleep(pause)
             print(f"{char.name} recovered from blindness!")
+        if char.redirect:
+            time.sleep(pause)
+            print(f"{char.name}'s attacks are no longer being redirected!")
+            char.redirect = None
 
     for foe in foes:
         if getattr(foe, 'dodge', False):
@@ -1411,6 +1486,10 @@ def cleanup():
             foe.blind = False
             time.sleep(pause)
             print(f"{foe.name} recovered from blindness!")
+        if foe.redirect:
+            time.sleep(pause)
+            print(f"{foe.name}'s attacks are no longer being redirected!")
+            foe.redirect = None
 
 def battleLoop():
     global turnNumber

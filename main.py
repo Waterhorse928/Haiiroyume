@@ -35,6 +35,11 @@ class OneTargetSupport(Skill):
         super().__init__()
         self.type = "onesupport"
 
+class TwoTargetSupport(Skill):
+    def __init__(self):
+        super().__init__()
+        self.type = "twosupport"
+
 class PartyAttack(Skill):
     def __init__(self):
         super().__init__()
@@ -542,6 +547,67 @@ class HealFoe(SelfSupport):
         self.info2 = f"Recovers {self.heal} health"
         self.costType = "spend"
 
+class Warp(TwoTargetSupport):
+    def __init__(self):
+        super().__init__()
+        self.cost = 1
+        self.name = "Warp"
+        self.info = f"Cost: {self.cost} Fate"
+        self.info2 = f"Swaps two target's fates"
+        self.costType = "spend"
+
+class Ellight(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.cost = 3
+        self.damage = 8
+        self.name = "Ellight"
+        self.info = f"Cost: {self.cost} Fate"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
+class Heal(SelfSupport):
+    def __init__(self):
+        super().__init__()
+        self.cost = 8
+        self.heal  = 30
+        self.name = "Heal"
+        self.info = f"Cost: {self.cost} Fate"
+        self.info2 = f"Recovers {self.heal} health"
+        self.costType = "spend"
+
+#Neoma
+class FluxFoe(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 15
+        self.cost = 0
+        self.name = 'Flux'
+        self.info = f"Cost: {self.cost} Spirits"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
+class LunaFoe(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 20
+        self.cost = 2
+        self.name = 'Luna'
+        self.info = f"Cost: {self.cost} Spirits"
+        self.info2 = f"Deals {self.damage} damage"
+        self.info3 = f"30% crit: 3* damage and heal"
+        self.costType = "spend"
+
+class InexorableDestinyFoe(OneTargetDebuff):
+    def __init__(self):
+        super().__init__()
+        self.cost = 12
+        self.name = 'Inexorable Destiny'
+        self.info = f"Cost: {self.cost} Spirits"
+        self.info2 = f"Target suffers destiny"
+        self.info3 = f"earlier than expected"
+        self.costType = "spend"
+
 # All characters have these stats.
 class Character:
     def __init__(self, name="", hp=0):
@@ -550,6 +616,8 @@ class Character:
         self.hpMax = hp
         self.blind = False
         self.redirect = None
+        self.warp1 = False
+        self.warp2 = False
 
 class Reimu(Character):
     def __init__(self):
@@ -615,7 +683,7 @@ class William(Character):
         super().__init__("William", 46)
         self.sp = 0
         self.term = "Fate"
-        self.skills = []
+        self.skills = [Warp(),Ellight(),Heal()]
 
 class Neoma(Character):
     def __init__(self):
@@ -653,6 +721,8 @@ class Foe:
         self.hidehp = False
         self.blind = False
         self.redirect = None
+        self.warp1 = False
+        self.warp2 = False
 
 class MarisaFoe(Foe):
     def __init__(self):
@@ -721,9 +791,9 @@ class WilliamFoe(Foe):
 
 class NeomaFoe(Foe):
     def __init__(self):
-        super().__init__("Neoma", 70)
-        self.sp = ""
-        self.term = ""
+        super().__init__("Neoma", 112)
+        self.sp = 13
+        self.term = "Spirits"
 
 class AlfonseFoe(Foe):
     def __init__(self):
@@ -832,7 +902,7 @@ def chooseTarget(char,skill):
         elif skill.type == "onesupport":
             party = getPartyList(char,False,False)
         if len(party) != 1:
-            display = [[f'-- Choose an target for {skill.name} --'],
+            display = [[f'-- Choose a target for {skill.name} --'],
                        [str(party.index(unit)+1)+ ". " + unit.name for unit in party]]
             box(display)
             result = ask(1,len(party))
@@ -840,19 +910,33 @@ def chooseTarget(char,skill):
         else:
             result = party[0]
         return result
+    if skill.type == "twosupport":
+        party = getPartyList(char,False,False)
+        result = []
+        while True:
+            display = [[f'-- Choose a target for {skill.name} --'],
+                    [str(party.index(unit)+1)+ ". " + unit.name for unit in party]]
+            box(display)
+            input = ask(1,len(party))
+            result.append(party[input-1])
+            if len(result) == 2:
+                break
 
 def useSkill(unit,skill):
-    for x in getPartyList(unit,False,False)+getPartyList(unit,False,True):
-        if x.term == "Fate":
-            x.sp += 1
-            time.sleep(pause)
-            print(f"{x.name} gained 1 Fate!")
+    skip = False
+    skipAll = False
+    crit = False
     if isinstance(skill,MasterSpark):
         unit.dodge = True
     elif isinstance(skill,DullahanNightFoe):
         skill.damage = unit.sp*4
     elif isinstance(skill,DullahanNight):
         skill.damage = unit.sp*3
+    elif isinstance(skill,LunaFoe):
+        if random.random() <= 0.5:
+            crit = True
+            time.sleep(pause)
+            print(f"Critical!")
     if skill.costType == "spend":
         unit.sp -= skill.cost
         time.sleep(pause)
@@ -864,6 +948,7 @@ def useSkill(unit,skill):
         print(f"{unit.name} spends {spent} {unit.term},")
     elif skill.costType == "uses":
         skill.uses -= 1
+
     if skill.type == "onetarget" or skill.type == "partyattack":
         targetList = []
         time.sleep(pause)
@@ -880,13 +965,27 @@ def useSkill(unit,skill):
         if skill.type == "partyattack":
             targetList = getPartyList(unit,False,True)
         for target in targetList:
+            if target.warp1:
+                for x in getPartyList(unit,False,False)+getPartyList(unit,False,True):
+                    if x.warp2:
+                        target = x
+            if target.warp2:
+                for x in getPartyList(unit,False,False)+getPartyList(unit,False,True):
+                    if x.warp1:
+                        target = x
+            if target.hp == 0:
+                time.sleep(pause)
+                print (f"{target.name} is already defeated!")
+                skipAll = True
             damage = skill.damage
-            if isinstance(target,Kurohebi) and target.sp != 0 and unit.blind == False and getattr(target, 'dodge', False) == False:
+            if isinstance(skill,LunaFoe) and crit:
+                damage *= 2
+            if isinstance(target,Kurohebi) and target.sp != 0 and unit.blind == False and getattr(target, 'dodge', False) == False and skipAll != True:
                 time.sleep(pause)
                 print (f"{target.name} is cloaked in darkness!")
                 target.sp -= 1
                 target.dodge = True
-            if getattr(unit, "deflection", False):
+            if getattr(unit, "deflection", False) and skipAll != True:
                 if getattr(target, 'graze', False):
                     time.sleep(pause)
                     print(f"{unit.name} caught {target.name}'s dodge!")
@@ -898,39 +997,43 @@ def useSkill(unit,skill):
                 else:
                     time.sleep(pause)
                     print(f"{unit.name} overshot {target.name} trying to read a dodge!")
-                    return
-            if getattr(target, 'graze', False):
+                    skipAll = True
+            if getattr(target, 'graze', False) and skipAll != True:
                 target.sp += damage
                 time.sleep(pause)
                 print(f"Reimu gains {damage} points as she grazes it!")
-            elif hasattr(target, 'counter') and unit in target.counter:
+                skip = True
+            elif hasattr(target, 'counter') and unit in target.counter and skipAll != True:
                 time.sleep(pause)
                 print(f"{target.name} anticipated the attack!")
                 time.sleep(pause)
                 print(f"{target.name} dodges and counters!")
                 target.nextTarget = unit
                 useSkill(target,target.counterSkill)
-            elif unit.blind:
+                skip = True
+            elif unit.blind and skipAll != True:
                 time.sleep(pause)
                 print(f"{unit.name} can't see!")
                 time.sleep(pause)
                 print(f"{target.name} dodges the attack!")
-            elif getattr(target, 'dodge', False):
+                skip = True
+            elif getattr(target, 'dodge', False) and skipAll != True:
                 time.sleep(pause)
                 print(f"{target.name} dodges the attack!")
-            elif target.term == "Heads" and target.sp != 0:
+                skip = True
+            elif target.term == "Heads" and target.sp != 0 and skipAll != True:
                 time.sleep(pause)
                 print (f"{target.name} blocks the attack with one of her heads!")
                 target.sp -= 1
                 damage = round(damage/2)
-            else:
+            if skip != True and skipAll != True:
                 hpBefore = target.hp
                 target.hp -= damage
                 if target.hp <= 0:
                     target.hp = 0
                 time.sleep(pause)
                 print (f'{target.name} took {hpBefore-target.hp} damage!')
-                if isinstance(skill,Nosferatu):
+                if isinstance(skill,Nosferatu) or crit:
                     hpHealed = unit.hp
                     unit.hp = min(unit.hpMax,(unit.hp + round((hpBefore-target.hp)/2)))
                     hpHealed = unit.hp - hpHealed
@@ -952,6 +1055,11 @@ def useSkill(unit,skill):
                 if target.hp <= 0:
                     time.sleep(pause)
                     print (f'{target.name} is defeated!')
+                    for x in getPartyList(unit,False,False)+getPartyList(unit,False,True):
+                        if x.term == "Spirits":
+                            x.sp += 5
+                            time.sleep(pause)
+                            print (f'{x.name} gained 5 Spirits!')
                 if unit.term == "Momentum":
                     unit.sp += hpBefore-target.hp
                     time.sleep(pause)
@@ -981,7 +1089,6 @@ def useSkill(unit,skill):
             time.sleep(pause)
             print(f"{unit.name} gained 3 Heads!")
         
-
     elif skill.type == "onesupport":
         if isinstance(unit,Character):
             target = chooseTarget(unit,skill)
@@ -993,10 +1100,23 @@ def useSkill(unit,skill):
             time.sleep(pause)
             print(f"{target.name} recovered {target.hpMax - target.hp} health!")
             target.hp = target.hpMax
+        if isinstance(skill, Heal):
+            hpBefore = target.hp
+            target.hp = min(target.hpMax,target.hp+skill.heal)
+            time.sleep(pause)
+            print(f"{target.name} recovered {target.hp-hpBefore} health!")
         if isinstance(skill,NightTrain):
             time.sleep(pause)
             print(f"{target.name} is hidden!")
             target.dodge = True
+
+    elif skill.type == "twosupport":
+        if isinstance(unit,Character):
+            targets = chooseTarget(unit,skill)
+        if isinstance(unit,Foe):
+            targets = unit.nextTarget
+        time.sleep(pause)
+        print(f"{unit.name} used {skill.name}!")
     
     elif skill.type == "onedebuff":
         if isinstance(unit,Character):
@@ -1005,6 +1125,15 @@ def useSkill(unit,skill):
             target = unit.nextTarget
         time.sleep(pause)
         print(f"{unit.name} used {skill.name}!")
+        if target.hp == 0:
+            time.sleep(pause)
+            print (f"{target.name} is already defeated!")
+            for x in getPartyList(unit,False,False)+getPartyList(unit,False,True):
+                if x.term == "Fate":
+                    x.sp += 1
+                    time.sleep(pause)
+                    print(f"{x.name} gained 1 Fate!")
+            return
         if isinstance(skill,Imperceptible):
             target.blind = 2
             time.sleep(pause)
@@ -1013,6 +1142,21 @@ def useSkill(unit,skill):
             target.redirect = unit.warpTarget
             #time.sleep(pause)
             #print(f"{target.name}'s attacks are being redirected!")
+        if isinstance(skill,InexorableDestinyFoe):
+            target.hp = 0
+            time.sleep(pause)
+            print(f"{target.name} collapsed!")
+            for x in getPartyList(unit,False,False)+getPartyList(unit,False,True):
+                if x.term == "Spirits":
+                    x.sp += 5
+                    time.sleep(pause)
+                    print (f'{x.name} gained 5 Spirits!')
+
+    for x in getPartyList(unit,False,False)+getPartyList(unit,False,True):
+        if x.term == "Fate":
+            x.sp += 1
+            time.sleep(pause)
+            print(f"{x.name} gained 1 Fate!")
 
 def chooseSkill(char):
     display = [[f'-- Choose an action for {char.name} --'],
@@ -1080,7 +1224,22 @@ def unitTurn(unit):
         if isinstance(unit,Kurohebi):
             if unit.sp == 0 and unit.recover == False:
                 unit.recover = True
+                time.sleep(pause)
                 print(f"{unit.name} spends the turn recovering.")
+                return
+        if isinstance(unit,Robin):
+            if (unit.skills[0].uses+unit.skills[1].uses+unit.skills[2].uses+unit.skills[3].uses+unit.skills[4].uses) == 0:
+                time.sleep(pause)
+                print(f"{unit.name}'s weapons are all broken.")
+                return
+        if isinstance(unit,William):
+            if unit.sp == 0:
+                time.sleep(pause)
+                print(f"{unit.name} has no Fate to change.")
+                return
+            if unit.sp < 3 and len(getPartyList(unit,False,False)) == 1:
+                time.sleep(pause)
+                print(f"{unit.name} has no Fate to change.")
                 return
         useSkill(unit,chooseSkill(unit))
     elif isinstance(unit,Foe):
@@ -1406,7 +1565,31 @@ def williamAI(foe):
     foe.insightDisplay = random.choice(text)
 
 def neomaAI(foe):
-    pass
+    text = []
+    party = getPartyList(foe,False,True)
+    random.shuffle(party)
+    foe.sp += 3
+    if foe.sp >= 12:
+        foe.nextSkill = InexorableDestinyFoe()
+        target = random.choice(party)
+        text.append(f"{foe.name} is advancing {target.name}'s clock of fate.")
+        text.append(f"{foe.name} is bringing about another end.")
+        text.append(f"The inevitable is never forbidden.")
+        text.append(f"{target.name}'s destiny approaches.")
+    elif foe.sp >= 2 and random.choice([True,False]):
+        foe.nextSkill = LunaFoe()
+        target = min(party, key=lambda x: x.hp / x.hpMax)
+        text.append(f"Orbs of dark energy float around {target.name}.")
+        if random.random() <= 0.66:
+            text.append(f"Dark energy swirls in the air.")
+    else:
+        foe.nextSkill = FluxFoe()
+        target = min(party, key=lambda x: x.hp / x.hpMax)
+        text.append(f"A shadowy sigil appears at {target.name}'s feet.")
+        if random.random() <= 0.66:
+           text.append(f"Shadows dance despite the darkness.") 
+    foe.nextTarget = target
+    foe.insightDisplay = random.choice(text)
 
 def alfonseAI(foe):
     pass
@@ -1475,6 +1658,10 @@ def cleanup():
             time.sleep(pause)
             print(f"{char.name}'s attacks are no longer being redirected!")
             char.redirect = None
+        if char.warp1:
+            char.warp1 = False
+        if char.warp2:
+            char.warp2 = False
 
     for foe in foes:
         if getattr(foe, 'dodge', False):
@@ -1490,6 +1677,10 @@ def cleanup():
             time.sleep(pause)
             print(f"{foe.name}'s attacks are no longer being redirected!")
             foe.redirect = None
+        if foe.warp1:
+            foe.warp1 = False
+        if foe.warp2:
+            foe.warp2 = False
 
 def battleLoop():
     global turnNumber

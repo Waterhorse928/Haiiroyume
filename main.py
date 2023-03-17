@@ -2,7 +2,6 @@ import math
 import random
 import time
 import os
-import string
 
 pause = 0.2
 endTurnPause = 0.8
@@ -608,6 +607,36 @@ class InexorableDestinyFoe(OneTargetDebuff):
         self.info3 = f"earlier than expected"
         self.costType = "spend"
 
+#Alfonse
+class ScorchingSlashFoe(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 50
+        self.cost = 10
+        self.name = 'Scorching Slash'
+        self.info = f"+{self.cost} Heat"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "gain"
+
+class SiroccoGustFoe(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 20
+        self.cost = 10
+        self.name = 'Sirocco Gust'
+        self.info = f"-{self.cost} Heat"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
+class BlastOfSpeedFoe(SelfSupport):
+    def __init__(self):
+        super().__init__()
+        self.name = 'Scorching Slash'
+        self.info = f"No cost to activate"
+        self.info2 = f"Use Heat to dodge attacks"
+        self.info3 = f"Each dodge costs 5 Heat"
+        self.costType = "free"
+ 
 # All characters have these stats.
 class Character:
     def __init__(self, name="", hp=0):
@@ -797,9 +826,12 @@ class NeomaFoe(Foe):
 
 class AlfonseFoe(Foe):
     def __init__(self):
-        super().__init__("Alfonse Steadsteel", 70)
-        self.sp = ""
-        self.term = ""
+        super().__init__("Alfonse Steadsteel", 120)
+        self.sp = 0
+        self.term = "Heat"
+        self.blast = False
+        self.over = False
+        self.cool = False
 
 class MarkFoe(Foe):
     def __init__(self):
@@ -953,6 +985,10 @@ def useSkill(unit,skill):
         print(f"{unit.name} spends {spent} {unit.term},")
     elif skill.costType == "uses":
         skill.uses -= 1
+    elif skill.costType == "gain":
+        unit.sp += skill.cost
+        time.sleep(pause)
+        print(f"{unit.name} gains {skill.cost} {unit.term},")
 
     if skill.type == "onetarget" or skill.type == "partyattack":
         targetList = []
@@ -989,6 +1025,11 @@ def useSkill(unit,skill):
                 time.sleep(pause)
                 print (f"{target.name} is cloaked in darkness!")
                 target.sp -= 1
+                target.dodge = True
+            if getattr(target, "blast", False) and target.sp >= 5 and skipAll != True:
+                time.sleep(pause)
+                print (f"{target.name} is using blasts of heated air to dodge!")
+                target.sp -= 5
                 target.dodge = True
             if getattr(unit, "deflection", False) and skipAll != True:
                 if getattr(target, 'graze', False):
@@ -1031,6 +1072,19 @@ def useSkill(unit,skill):
                 print (f"{target.name} blocks the attack with one of her heads!")
                 target.sp -= 1
                 damage = round(damage/2)
+            elif target.term == "Heat" and skipAll != True:
+                if target.sp <= 20:
+                    time.sleep(pause)
+                    print (f"{target.name}'s armor absorbs part of the blow!")
+                    if isinstance(target,Foe):
+                        target.sp += 2
+                    if isinstance(target,Character):
+                        target.sp += 5
+                    damage = round(damage/2)
+                else:
+                    time.sleep(pause)
+                    print (f"{target.name}'s vulnerable!")
+                    damage = round(damage*2)
             if skip != True and skipAll != True:
                 hpBefore = target.hp
                 target.hp -= damage
@@ -1597,7 +1651,35 @@ def neomaAI(foe):
     foe.insightDisplay = random.choice(text)
 
 def alfonseAI(foe):
-    pass
+    text = []
+    party = getPartyList(foe,False,True)
+    random.shuffle(party)
+    target = party.pop()
+    decoy = False
+    if party != 0:
+        decoy = party.pop()
+    if foe.sp > 20 and foe.cool == True:
+        time.sleep(pause)
+        print(f"{foe.name}'s armor finishes cooling and closes back into place.")
+        foe.sp = 0
+        foe.cool = False
+        foe.over = False
+    if foe.sp > 20 and foe.cool == False:
+        foe.cool = True
+        foe.skip = 1
+        text.append(f"{foe.name} is stuck while his armor cools.")
+    elif foe.sp <= 5:
+        foe.nextSkill = ScorchingSlashFoe()
+        text.append(f"{foe.name} is preparing to strike {target.name}.")  
+    elif foe.sp >= 10 and random.choice([True,False]):
+        foe.nextSkill = SiroccoGustFoe()
+        text.append(f"{foe.name} lowers his sword and raises a palm towards {target.name}.")
+    else:
+        foe.skip = 1
+        foe.blast = True
+        text.append(f"{foe.name}'s armor is shimmering with the heat coming off it.")
+    foe.nextTarget = target
+    foe.insightDisplay = random.choice(text)
 
 def markAI(foe):
     pass
@@ -1649,6 +1731,8 @@ def cleanup():
             char.graze = False
         if getattr(char, 'dodge', False):
             char.dodge = False
+        if getattr(char, 'blast', False):
+            char.blast = False
         for skill in char.skills:
             if skill.costType == "cooldown":
                 if skill.cooldown != 0:
@@ -1671,6 +1755,8 @@ def cleanup():
     for foe in foes:
         if getattr(foe, 'dodge', False):
             foe.dodge = False
+        if getattr(foe, 'blast', False):
+            foe.blast = False
         if isinstance(foe,RobinFoe):
             foe.sp = foe.nextSkill.name
             foe.term = f"{foe.nextSkill.uses}{foe.nextSkill.info}"
@@ -1704,6 +1790,14 @@ def battleLoop():
                     time.sleep(endTurnPause)
             if not len([foe for foe in foes if foe.hp > 0]) > 0:
                 break
+            if isinstance(foes[0],AlfonseFoe) and foes[0].sp > 20:
+                if not foes[0].over:
+                    time.sleep(pause)
+                    print (f"{foes[0].name}'s armor flips open to cool,")
+                    time.sleep(pause)
+                    print (f"He's unprotected!")
+                    foes[0].over = True
+
         for foe in foes:
             if foe.hp > 0:
                 if hasattr(foe, 'skip') and getattr(foe, 'skip') > 0:
@@ -1714,6 +1808,13 @@ def battleLoop():
                     time.sleep(endTurnPause)
             if len([char for char in chars if char.hp > 0]) > 0:
                 break
+            if isinstance(foes[0],AlfonseFoe) and foes[0].sp > 20:
+                if not foes[0].over:
+                    time.sleep(pause)
+                    print (f"{foes[0].name}'s armor flips open to cool,")
+                    time.sleep(pause)
+                    print (f"He's unprotected!")
+                    foes[0].over = True
         cleanup()
     if not len([char for char in chars if char.hp > 0]) > 0:
         box([["Your party was defeated!"]])

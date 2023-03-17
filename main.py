@@ -558,18 +558,18 @@ class Warp(TwoTargetSupport):
 class Ellight(OneTargetAttack):
     def __init__(self):
         super().__init__()
-        self.cost = 3
-        self.damage = 8
+        self.cost = 8
+        self.damage = 18
         self.name = "Ellight"
         self.info = f"Cost: {self.cost} Fate"
         self.info2 = f"Deals {self.damage} damage"
         self.costType = "spend"
 
-class Heal(SelfSupport):
+class Heal(OneTargetSupport):
     def __init__(self):
         super().__init__()
-        self.cost = 8
-        self.heal  = 30
+        self.cost = 3
+        self.heal  = 15
         self.name = "Heal"
         self.info = f"Cost: {self.cost} Fate"
         self.info2 = f"Recovers {self.heal} health"
@@ -584,7 +584,7 @@ class FluxFoe(OneTargetAttack):
         self.name = 'Flux'
         self.info = f"Cost: {self.cost} Spirits"
         self.info2 = f"Deals {self.damage} damage"
-        self.costType = "spend"
+        self.costType = "free"
 
 class LunaFoe(OneTargetAttack):
     def __init__(self):
@@ -605,6 +605,37 @@ class InexorableDestinyFoe(OneTargetDebuff):
         self.info = f"Cost: {self.cost} Spirits"
         self.info2 = f"Target suffers destiny"
         self.info3 = f"earlier than expected"
+        self.costType = "spend"
+
+class Flux(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 5
+        self.cost = 0
+        self.name = 'Flux'
+        self.info = f"No cost"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "free"
+
+class Luna(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 12
+        self.cost = 2
+        self.name = 'Luna'
+        self.info = f"Cost: {self.cost} Spirits"
+        self.info2 = f"Deals {self.damage} damage"
+        self.info3 = f"30% crit: 3* damage and heal"
+        self.costType = "spend"
+
+class InexorableDestiny(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 90
+        self.cost = 12
+        self.name = 'Inexorable Destiny'
+        self.info = f"Cost: {self.cost} Spirits"
+        self.info2 = f"Deals {self.damage} damage"
         self.costType = "spend"
 
 #Alfonse
@@ -631,7 +662,7 @@ class SiroccoGustFoe(OneTargetAttack):
 class BlastOfSpeedFoe(SelfSupport):
     def __init__(self):
         super().__init__()
-        self.name = 'Scorching Slash'
+        self.name = 'Blast of Speed'
         self.info = f"No cost to activate"
         self.info2 = f"Use Heat to dodge attacks"
         self.info3 = f"Each dodge costs 5 Heat"
@@ -695,7 +726,7 @@ class Kogasa(Character):
 class Kurohebi(Character):
     def __init__(self):
         super().__init__("Kurohebi", 22)
-        self.sp = 5
+        self.sp = 3
         self.term = "Darkness"
         self.skills = [BlindShot(),SlitSnake(),Imperceptible()]
         self.recover = False
@@ -712,14 +743,14 @@ class William(Character):
         super().__init__("William", 46)
         self.sp = 0
         self.term = "Fate"
-        self.skills = [Warp(),Ellight(),Heal()]
+        self.skills = [Warp(),Heal(),Ellight()]
 
 class Neoma(Character):
     def __init__(self):
         super().__init__("Neoma", 38)
         self.sp = 0
         self.term = "Spirits"
-        self.skills = []
+        self.skills = [Flux(),Luna(),InexorableDestiny()]
 
 class Alfonse(Character):
     def __init__(self):
@@ -830,8 +861,6 @@ class AlfonseFoe(Foe):
         self.sp = 0
         self.term = "Heat"
         self.blast = False
-        self.over = False
-        self.cool = False
 
 class MarkFoe(Foe):
     def __init__(self):
@@ -953,14 +982,15 @@ def chooseTarget(char,skill):
             input = ask(1,len(party))
             result.append(party[input-1])
             if len(result) == 2:
-                break
+                return result
+            party.remove(result[0])
 
 def useSkill(unit,skill):
     #skip damage step
     skip = False
     #skip reaction step
     skipAll = False
-    #Nosfeatsu crit
+    #Luna crit
     crit = False
     #Skills specail stats
     if isinstance(skill,MasterSpark):
@@ -971,6 +1001,11 @@ def useSkill(unit,skill):
         skill.damage = unit.sp*3
     elif isinstance(skill,LunaFoe):
         if random.random() <= 0.5:
+            crit = True
+            time.sleep(pause)
+            print(f"Critical!")
+    elif isinstance(skill,Luna):
+        if random.random() <= 0.3:
             crit = True
             time.sleep(pause)
             print(f"Critical!")
@@ -1009,10 +1044,14 @@ def useSkill(unit,skill):
             if target.warp1:
                 for x in getPartyList(unit,False,False)+getPartyList(unit,False,True):
                     if x.warp2:
+                        time.sleep(pause)
+                        print(f"{unit.name}'s attack is redirected at {x.name}!")
                         target = x
             if target.warp2:
                 for x in getPartyList(unit,False,False)+getPartyList(unit,False,True):
                     if x.warp1:
+                        time.sleep(pause)
+                        print(f"{unit.name}'s attack is redirected at {x.name}!")
                         target = x
             if target.hp == 0:
                 time.sleep(pause)
@@ -1021,6 +1060,8 @@ def useSkill(unit,skill):
             damage = skill.damage
             if isinstance(skill,LunaFoe) and crit:
                 damage *= 2
+            if isinstance(skill,Luna) and crit:
+                damage *= 3
             if isinstance(target,Kurohebi) and target.sp != 0 and unit.blind == False and getattr(target, 'dodge', False) == False and skipAll != True:
                 time.sleep(pause)
                 print (f"{target.name} is cloaked in darkness!")
@@ -1028,7 +1069,7 @@ def useSkill(unit,skill):
                 target.dodge = True
             if getattr(target, "blast", False) and target.sp >= 5 and skipAll != True:
                 time.sleep(pause)
-                print (f"{target.name} is using blasts of heated air to dodge!")
+                print (f"{target.name} spends 5 Heat,")
                 target.sp -= 5
                 target.dodge = True
             if getattr(unit, "deflection", False) and skipAll != True:
@@ -1078,13 +1119,16 @@ def useSkill(unit,skill):
                     print (f"{target.name}'s armor absorbs part of the blow!")
                     if isinstance(target,Foe):
                         target.sp += 2
+                        time.sleep(pause)
+                        print (f"{target.name} gains 2 Heat!")
                     if isinstance(target,Character):
                         target.sp += 5
+                        time.sleep(pause)
+                        print (f"{target.name} gains 5 Heat!")
                     damage = round(damage/2)
                 else:
                     time.sleep(pause)
-                    print (f"{target.name}'s vulnerable!")
-                    damage = round(damage*2)
+                    print (f"{target.name}'s armor is too hot to function!")
             if skip != True and skipAll != True:
                 hpBefore = target.hp
                 target.hp -= damage
@@ -1176,6 +1220,9 @@ def useSkill(unit,skill):
             targets = unit.nextTarget
         time.sleep(pause)
         print(f"{unit.name} used {skill.name}!")
+        if isinstance(skill,Warp):
+            targets[0].warp1 = True
+            targets[1].warp2 = True
     
     elif skill.type == "onedebuff":
         if isinstance(unit,Character):
@@ -1658,26 +1705,25 @@ def alfonseAI(foe):
     decoy = False
     if party != 0:
         decoy = party.pop()
-    if foe.sp > 20 and foe.cool == True:
-        time.sleep(pause)
-        print(f"{foe.name}'s armor finishes cooling and closes back into place.")
-        foe.sp = 0
-        foe.cool = False
-        foe.over = False
-    if foe.sp > 20 and foe.cool == False:
-        foe.cool = True
-        foe.skip = 1
-        text.append(f"{foe.name} is stuck while his armor cools.")
-    elif foe.sp <= 5:
+    if foe.sp <= 10:
         foe.nextSkill = ScorchingSlashFoe()
-        text.append(f"{foe.name} is preparing to strike {target.name}.")  
+        text.append(f"{foe.name} is heating his sword to strike {target.name}!")
+        text.append(f"{foe.name}'s sword heats in preparation to attack {target.name}!")
+        if decoy:
+            text.append(f"{foe.name} fakes an attack at {decoy.name}, sword glowing for his real attack.")
     elif foe.sp >= 10 and random.choice([True,False]):
         foe.nextSkill = SiroccoGustFoe()
         text.append(f"{foe.name} lowers his sword and raises a palm towards {target.name}.")
+        text.append(f"{foe.name} sheathes his sword and rushes toward {target.name}.")
+        if decoy:
+            text.append(f"{foe.name} fakes an attack at {decoy.name}, sword sheathed for his real attack.")
     else:
         foe.skip = 1
         foe.blast = True
-        text.append(f"{foe.name}'s armor is shimmering with the heat coming off it.")
+        text.append(f"The air around {foe.name} is shimmering with the heat coming off his armor.")
+        text.append(f"{foe.name} is prepared to dodge any incoming attacks.")
+        text.append(f"{foe.name} checks his stance and footing.")
+    text.append(f"{foe.name} scans the area for any additional threats.")
     foe.nextTarget = target
     foe.insightDisplay = random.choice(text)
 
@@ -1695,9 +1741,13 @@ def insightTurn():
             if isinstance(char,Kurohebi):
                 if char.sp == 0 and char.recover == True:
                     char.recover = False
-                    char.sp = 5
+                    char.sp = 3
                     time.sleep(pause)
-                    print(f"{char.name} recovered 5 Darkness!")
+                    print(f"{char.name} recovered 3 Darkness!")
+            if isinstance(char,Neoma):
+                char.sp += 1
+                time.sleep(pause)
+                print(f"{char.name} gained 1 Spirit!")
     for foe in foes:
         if foe.hp > 0:
             if isinstance(foe,MarisaFoe):
@@ -1790,13 +1840,6 @@ def battleLoop():
                     time.sleep(endTurnPause)
             if not len([foe for foe in foes if foe.hp > 0]) > 0:
                 break
-            if isinstance(foes[0],AlfonseFoe) and foes[0].sp > 20:
-                if not foes[0].over:
-                    time.sleep(pause)
-                    print (f"{foes[0].name}'s armor flips open to cool,")
-                    time.sleep(pause)
-                    print (f"He's unprotected!")
-                    foes[0].over = True
 
         for foe in foes:
             if foe.hp > 0:
@@ -1808,13 +1851,6 @@ def battleLoop():
                     time.sleep(endTurnPause)
             if len([char for char in chars if char.hp > 0]) > 0:
                 break
-            if isinstance(foes[0],AlfonseFoe) and foes[0].sp > 20:
-                if not foes[0].over:
-                    time.sleep(pause)
-                    print (f"{foes[0].name}'s armor flips open to cool,")
-                    time.sleep(pause)
-                    print (f"He's unprotected!")
-                    foes[0].over = True
         cleanup()
     if not len([char for char in chars if char.hp > 0]) > 0:
         box([["Your party was defeated!"]])
@@ -1824,7 +1860,6 @@ def battleLoop():
         return True
 
 def startStory (file):
-    return
     x = open(f"{dir_path}/txt/story/{file}.txt","r",encoding='utf-8')
     y = x.readlines()
     for z in y:

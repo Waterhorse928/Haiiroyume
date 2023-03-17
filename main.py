@@ -808,6 +808,7 @@ class MarkFoe(Foe):
         self.term = ""
 
 def box(text):
+    # boxSize = os.get_terminal_size().columns - 2
     boxSize = 120
     print(f'{"":-^{boxSize+2}}')
     rows = len(text)
@@ -923,9 +924,13 @@ def chooseTarget(char,skill):
                 break
 
 def useSkill(unit,skill):
+    #skip damage step
     skip = False
+    #skip reaction step
     skipAll = False
+    #Nosfeatsu crit
     crit = False
+    #Skills specail stats
     if isinstance(skill,MasterSpark):
         unit.dodge = True
     elif isinstance(skill,DullahanNightFoe):

@@ -33,7 +33,7 @@ You look above you but there's only the shifting void.
 "Alright, I'm dealing with some sort of amnesia, I'm surrounded by some sort of evil darkness, and I'm talking to myself."
 "I seem to be functioning rather well considering all that."
 Your mind doesn't seem to be foggy at all.
-As you consider your situation, words and ideas that explain your surroundings seem to come naturally, not unlike cresting a hill.
+As you consider your situation, words and ideas that explain your surroundings seem to come naturally.
 "Let's see here, what can I remember?"
 You try to think about something that isn't here.
 "This is the ground. Below the ground is..."

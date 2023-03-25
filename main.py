@@ -195,7 +195,7 @@ class ExaltedFalchionFoe(SelfSupport):
 class Strike(OneTargetAttack):
     def __init__(self):
         super().__init__()
-        self.damage = 8
+        self.damage = 10
         self.name = 'Exalted Falchion - Strike'
         self.info = f"No cost"
         self.info2 = f"Deals {self.damage} damage"      
@@ -731,10 +731,50 @@ class MossySongFoe(SelfSupport):
     def __init__(self):
         super().__init__()
         self.name = 'Mossy Song'
-        self.cost = 5
-        self.info = f"Cost: {self.cost} Spirit"
+        self.cost = 1
+        self.info = f"Cost: {self.cost} Health"
         self.info2 = f"Triple damage of next attack"
+        self.costType = "spendHP" 
+
+class Dagger(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 3
+        self.cost = 0
+        self.name = 'Dagger'
+        self.info = f"No cost"
+        self.info2 = f"Deals {self.damage} damage"
+        self.info3 = f"20% chance to dodge"
+        self.costType = "free"
+
+class PureCrystalight(OneTargetDebuff):
+    def __init__(self):
+        super().__init__()
+        self.name = "Pure Crystalight"
+        self.cost = 2
+        self.info = f"Cost: {self.cost} Spirit"
+        self.info2 = f"Reveal the target's intentions"
         self.costType = "spend" 
+
+class ShootingStar(OneTargetAttack):
+    def __init__(self):
+        super().__init__()
+        self.damage = 10
+        self.cost = 4
+        self.name = 'Shooting Star'
+        self.info = f"Cost: {self.cost} Spirit"
+        self.info2 = f"Deals {self.damage} damage"
+        self.costType = "spend"
+
+class MossySong(OneTargetSupport):
+    def __init__(self):
+        super().__init__()
+        self.name = 'Mossy Song'
+        self.cost = 1
+        self.info = f"Cost: {self.cost} Health"
+        self.info2 = f"Double damage of"
+        self.info3 = f"target's next attack"
+        self.costType = "spendHP" 
 
 # All characters have these stats.
 class Character:
@@ -746,6 +786,8 @@ class Character:
         self.redirect = None
         self.warp1 = False
         self.warp2 = False
+        self.boost = False
+        self.dodge = False
 
 class Reimu(Character):
     def __init__(self):
@@ -836,7 +878,7 @@ class Mark(Character):
         super().__init__("Mark Mapleridge", 48)
         self.sp = 20
         self.term = "Spirit"
-        self.skills = []
+        self.skills = [Dagger(),PureCrystalight(),ShootingStar(),MossySong()]
 
 #Ze bosses themselves
 class Foe:
@@ -856,6 +898,7 @@ class Foe:
         self.warp1 = False
         self.warp2 = False
         self.boost = False
+        self.trueAction = ""
 
 class MarisaFoe(Foe):
     def __init__(self):
@@ -1079,11 +1122,18 @@ def useSkill(unit,skill):
             crit = True
             time.sleep(pause)
             print(f"Critical!")
+    elif isinstance(skill,Dagger):
+        if random.random() <= 0.2:
+            unit.dodge = True
 #Skill Costs
     if skill.costType == "spend":
         unit.sp -= skill.cost
         time.sleep(pause)
         print(f"{unit.name} spends {skill.cost} {unit.term},")
+    if skill.costType == "spendHP":
+        unit.hp -= skill.cost
+        time.sleep(pause)
+        print(f"{unit.name} spends {skill.cost} health,")
     if skill.costType == "spendall":
         spent = unit.sp
         unit.sp = 0
@@ -1111,6 +1161,12 @@ def useSkill(unit,skill):
                 print(f"{unit.name}'s attack is redirected at {unit.redirect.name}!")
         if skill.type == "partyattack":
             targetList = getPartyList(unit,False,True)
+        boost = False
+        if getattr(unit, "boost", False):
+            boost = True
+            unit.boost = False
+            time.sleep(pause)
+            print (f"{unit.name}'s attack is boosted!")
         for target in targetList:
             #skip damage step
             skip = False
@@ -1133,11 +1189,11 @@ def useSkill(unit,skill):
                 print (f"{target.name} is already defeated!")
                 skipAll = True
             damage = skill.damage
-            if getattr(unit, "boost", False):
-                time.sleep(pause)
-                print (f"{unit.name}'s attack is boosted!")
-                damage *= 3
-                unit.boost = False
+            if boost:
+                if isinstance(unit,Foe):
+                    damage *= 3
+                if isinstance(unit,Character):
+                    damage *= 2
             if isinstance(skill,LunaFoe) and crit:
                 damage *= 2
             if isinstance(skill,Luna) and crit:
@@ -1312,6 +1368,10 @@ def useSkill(unit,skill):
             time.sleep(pause)
             print(f"{target.name} is hidden!")
             target.dodge = True
+        if isinstance(skill, MossySong):
+            time.sleep(pause)
+            print(f"{target.name}'s next attack will be boosted!")
+            target.boost = True
 #Support Skills with two targets
     elif skill.type == "twosupport":
         if isinstance(unit,Character):
@@ -1357,6 +1417,9 @@ def useSkill(unit,skill):
                     x.sp += 5
                     time.sleep(pause)
                     print (f'{x.name} gained 5 Souls!')
+        if isinstance(skill,PureCrystalight):
+            time.sleep(pause)
+            print (target.trueAction)
 #Skill Cleanup
     for x in getPartyList(unit,False,False)+getPartyList(unit,False,True):
         if x.term == "Fate":
@@ -1380,6 +1443,12 @@ def chooseSkill(char):
             else:
                 time.sleep(pause)
                 print(f"Not enough {char.term}.")
+        if result.costType == "spendHP":
+            if result.cost < char.hp:
+                return result
+            else:
+                time.sleep(pause)
+                print(f"Not enough health.")
         elif result.costType == "cooldown":
             if result.cooldown == 0:
                 result.cooldown = result.cooldownTurns
@@ -1612,6 +1681,7 @@ def sekibankiAI(foe):
             text.append(f"{foe.name} is planning to go for the weak link.")
         else:
             text.append(f"{foe.name}'s heads are hard to keep track of.")
+    foe.trueAction = f"Sekibanki is attacking {foe.nextTarget.name} with as many heads as she can.\nShe has {foe.sp} heads right now."
     foe.insightDisplay = random.choice(text) 
 
 def kogasaAI(foe):
@@ -1622,18 +1692,21 @@ def kogasaAI(foe):
         foe.nextTarget = target
         text.append(f"The constant rain abruptly stops falling...")
         text.append(f"All at once the night is deafeningly silent...")
+        foe.trueAction = f"{foe.name} is going to attack everyone with {KarakasaFlashFoe().name}!."
     elif foe.sp >= 30  and random.choice([True,False]):
         foe.extraTurns = True
         foe.nextList = [[DanmakuFoe(),target],[NightTrainFoe(),target]]
         text.append(f"The sound of a train starts to fill the night...")
         text.append(f"{foe.name} is sneaking up behind {target.name}.")
         text.append(f"{foe.name} thinks that she can scare {target.name}.")
+        foe.trueAction = f"{foe.name} is going to attack {target.name} with {NightTrainFoe().name}!\nShe'll attack with {DanmakuFoe().name} first."
     elif foe.sp >= 15 and random.choice([True,False]):
         foe.extraTurns = True
         foe.nextList = [[DanmakuFoe(),target],[RainyNightFoe(),target]]
         text.append(f"The rain is getting worse...")
         text.append(f"{target.name} spots {foe.name} hiding behind a box.")
         text.append(f"{target.name} can see {foe.name}'s umbrella poking out from around a corner.")
+        foe.trueAction = f"{foe.name} is going to attack {target.name} with {RainyNightFoe().name}!\nShe'll attack with {DanmakuFoe().name} first."
     else:
         foe.nextSkill = DanmakuFoe()
         foe.nextTarget = target
@@ -1641,6 +1714,7 @@ def kogasaAI(foe):
             text.append(f"{foe.name} is nowhere in sight.")
         else:
             text.append(f"The rain contines to fall...")
+        foe.trueAction = f"{foe.name} is going to attack everyone with {DanmakuFoe().name}."
     foe.insightDisplay = random.choice(text) 
 
 def kurohebiAI(foe):
@@ -1656,6 +1730,7 @@ def kurohebiAI(foe):
         text.append(f"{foe.name} is wide open!")
         foe.recover = True
         foe.nextSkill = ""
+        foe.trueAction = f"{foe.name} is recovering this turn."
     else:
         skillList = [BlindShotFoe(),BlindShotFoe()]
         if foe.sp >= 2:
@@ -1670,20 +1745,24 @@ def kurohebiAI(foe):
             text.append(f"{random.choice(party).name} is out of range of {foe.name}'s attacks.")
         text.append(f"{foe.name} is targeting {foe.nextTarget.name} next!")
         text.append(f"{foe.nextTarget.name} is exactly where {foe.name} wants.")
+        foe.trueAction = f"{foe.name} is attacking {foe.nextTarget.name} with {BlindShotFoe().name}."
     elif isinstance(foe.nextSkill,SlitSnakeFoe):
         if len(party) > 1:
             foe.counter = [foe.nextTarget,random.choice(party)]
             text.append(f"{foe.name} is anticipating {foe.counter[0].name} and {foe.counter[1].name} attacks.")
             text.append(f"{foe.name} is ready to ambush {foe.counter[0].name} and {foe.counter[1].name}!")
+            foe.trueAction = f"{foe.name} is ready to dodge and counter {foe.counter[0].name} and {foe.counter[1].name} attacks."
         else:
             foe.counter = [foe.nextTarget]
             text.append(f"{foe.name} is anticipating {foe.counter[0].name} attacks.")
             text.append(f"{foe.name} is ready to ambush {foe.counter[0].name}!")
+            foe.trueAction = f"{foe.name} is ready to dodge and counter {foe.counter[1].name} attack."
         foe.skip = 1
     elif isinstance(foe.nextSkill,ImperceptibleFoe):
         foe.counter = []
         text.append(f"{foe.name} has disappeared out of sight!")
         text.append(f"{foe.name} is flickering in and out of view.")
+        foe.trueAction = f"{foe.name} is attacking everyone with {ImperceptibleFoe().name}!"
     garbleness = (foe.sp/15)
     foe.insightDisplay = garble(random.choice(text),prob=garbleness)
 
@@ -1709,14 +1788,17 @@ def mediasAI(foe):
         foe.nextSkill = EmperorsClawFoe()
         foe.nextTarget = target
         foe.insight = random.randint(0, 10)
+        foe.trueAction = f"{foe.name} is attacking {target.name} with {EmperorsClawFoe().name}!"
     elif foe.sp >= 10:
         foe.nextSkill = PenguinHighwayFoe()
         foe.nextTarget = target
         foe.insight = random.randint(0, 6)
+        foe.trueAction = f"{foe.name} is attacking {target.name} with {PenguinHighwayFoe().name}!"
     else:
         foe.nextSkill = EmperorDanceFoe()
         foe.nextTarget = target
         foe.insight = random.randint(0, 3)
+        foe.trueAction = f"{foe.name} is attacking {target.name} with {EmperorDanceFoe().name}."
     if foe.insight in [0,3]:
         if foe.deflection:
             text.append(f"{foe.name} is aiming for {target.name}'s dodge!")
@@ -1765,15 +1847,22 @@ def williamAI(foe):
         text.append(f"{foe.name} is changing the target of {target.name}'s attacks!")
         text.append(f"{redirect.name} is the target of whoever got warped.")
         text.append(f"{foe.name} is redirecting someone's attack.")
+        foe.trueAction = f"{foe.name} is redirecting {target.name}'s attack at {redirect.name}!"
     if foe.sp >= 9:
         foe.nextSkill = HealFoe()
         text.append(f"{foe.name} is going to heal himself!")
+        if len(party) == 0:
+            foe.trueAction = f"{foe.name} is going to heal himself!"
     elif foe.sp >= 3:
         foe.nextSkill = EllightFoe()
         text.append(f"{foe.name} is using his Ellight tome.")
+        if len(party) == 0:
+            foe.trueAction = f"{foe.name} is using his Ellight tome."
     else:
         foe.skip = 1
         text.append(f"{foe.name} doesn't have enough Fate.")
+        if len(party) == 0:
+            foe.trueAction = f"{foe.name} doesn't have enough Fate."
     foe.insightDisplay = random.choice(text)
 
 def neomaAI(foe):
@@ -1788,18 +1877,21 @@ def neomaAI(foe):
         text.append(f"{foe.name} is bringing about another end.")
         text.append(f"The inevitable is never forbidden.")
         text.append(f"{target.name}'s destiny approaches.")
+        foe.trueAction = f"{foe.name} is ending {target.name} destiny!"
     elif foe.sp >= 2 and random.choice([True,False]):
         foe.nextSkill = LunaFoe()
         target = min(party, key=lambda x: x.hp / x.hpMax)
         text.append(f"Orbs of dark energy float around {target.name}.")
         if random.random() <= 0.66:
             text.append(f"Dark energy swirls in the air.")
+        foe.trueAction = f"{foe.name} is attacking {target.name} with {LunaFoe().name}!"
     else:
         foe.nextSkill = FluxFoe()
         target = min(party, key=lambda x: x.hp / x.hpMax)
         text.append(f"A shadowy sigil appears at {target.name}'s feet.")
         if random.random() <= 0.66:
-           text.append(f"Shadows dance despite the darkness.") 
+           text.append(f"Shadows dance despite the darkness.")
+        foe.trueAction = f"{foe.name} is attacking {target.name} with {FluxFoe().name}."
     foe.nextTarget = target
     foe.insightDisplay = random.choice(text)
 
@@ -1817,18 +1909,21 @@ def alfonseAI(foe):
         text.append(f"{foe.name}'s sword heats in preparation to attack {target.name}!")
         if decoy:
             text.append(f"{foe.name} fakes an attack at {decoy.name}, sword glowing for his real attack.")
+        foe.trueAction = f"{foe.name} is attacking {target.name} with {ScorchingSlashFoe().name}!"
     elif foe.sp >= 10 and random.choice([True,False]):
         foe.nextSkill = SiroccoGustFoe()
         text.append(f"{foe.name} lowers his sword and raises a palm towards {target.name}.")
         text.append(f"{foe.name} sheathes his sword and rushes toward {target.name}.")
         if decoy:
             text.append(f"{foe.name} fakes an attack at {decoy.name}, sword sheathed for his real attack.")
+        foe.trueAction = f"{foe.name} is attacking {target.name} with {SiroccoGustFoe().name}!"
     else:
         foe.skip = 1
         foe.blast = True
         text.append(f"The air around {foe.name} is shimmering with the heat coming off his armor.")
         text.append(f"{foe.name} is prepared to dodge any incoming attacks.")
         text.append(f"{foe.name} checks his stance and footing.")
+        foe.trueAction = f"{foe.name} is dodging incoming attacks by spending Heat!"
     text.append(f"{foe.name} scans the area for any additional threats.")
     foe.nextTarget = target
     foe.insightDisplay = random.choice(text)
@@ -1838,7 +1933,7 @@ def markAI(foe):
     party = getPartyList(foe,False,True)
     random.shuffle(party)
     target = party.pop()
-    if foe.boost == False and foe.sp >= MossySongFoe().cost and random.choice([1,0]):
+    if foe.boost == False and foe.hp > MossySongFoe().cost and random.choice([1,0]):
         foe.nextSkill = MossySongFoe()
         text.append(f"{foe.name} seems to be singing something but he's not making any sound.")
     elif foe.sp >= PureCrystalightFoe().cost and foe.light == False and random.choice([1,0]):

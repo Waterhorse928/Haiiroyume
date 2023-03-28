@@ -2212,9 +2212,12 @@ def mainMenu():
         select = ask(0,2)
         if select == 0:
             l = listSaveFiles()
-            box([["-- Choose a save file --"],[l]])
-            save = askList(l)
-            restPoint()
+            if l == []:
+                select = 1
+            else:
+                box([["-- Choose a save file --"],[l]])
+                save = askList(l)
+                restPoint()
         if select == 1:
             save = newSave()
             startStory("newgame")

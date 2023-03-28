@@ -46,6 +46,31 @@ You pull out the Wii Remote and Reimu comes over to examine it.
 Reimu: "Hmm..."
 Reimu: "It looks like something Rinnosuke would hold on to."
 Reimu reaches her hand out to grab the remote.
-As she makes contact with the remote, a menu suddenly pops up.
+As she makes contact with the remote, a menu pops up.
+-- Would you like to send a party invite to Reimu Hakurei? --
+0. Yes    1. No
+Choose a number:
+You notice a number pad popped up with the menu.
+Reimu: "What's this?"
+Reimu's trying to touch the menu, but her hand keeps passing through it.
+"Not sure. Give me a second."
+You press 0 and hit enter with the number pad.
+The menu and number pad disapears and reapears in front of Reimu.
+-- Would you like join Gate's party? --
+0. Yes    1. No
+Choose a number:
+Reimu: "You're throwing a party?"
+"Uh, no."
+"It's more of a group of people that work together to acomplish something."
+Reimu: "Ah."
+Reimu: "Well sure then."
+After a second, Reimu figures out how to use the number pad.
+-- Reimu Hakurei has joined your party! --
+Remembering the menu from earlier, you press the home button.
+"Sure enough, there you are."
+But now there's extra stuff at the bottom and the number pad's back.
+
+
+
 
 

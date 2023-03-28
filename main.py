@@ -1779,7 +1779,7 @@ def mediasAI(foe):
     else:
         decoy = False
         names = None
-    foe.deflection = random.choice([True, False, False, False])
+    foe.deflection = random.choice([True, False, False, False, False])
     if foe.deflection:
         foe.hit = False
     else:
@@ -2097,6 +2097,8 @@ def startStory (file):
     y = x.readlines()
     for z in y:
         z = z.replace("\n","")
+        if z == "WIP":
+            return
         print(z, end='')
         a = input(" ")
         if a == "skip":

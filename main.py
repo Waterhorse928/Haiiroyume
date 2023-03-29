@@ -2429,6 +2429,6 @@ def restPoint():
         
 mainMenu()
 
-    # haha this is what you get 
+# haha this is what you get 
 secretCode = ["#EasterEgg"]
 print(secretCode)

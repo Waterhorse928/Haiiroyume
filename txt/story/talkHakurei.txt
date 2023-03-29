@@ -69,4 +69,16 @@ After a second, Reimu figures out how to use the number pad.
 Remembering the menu from earlier, you press the home button.
 "Sure enough, there you are."
 But now there's extra stuff at the bottom and the number pad's back.
-Reimu: "I recognize some of these, 
+Reimu: "Those are my attacks... At least some of them."
+"I'll try selecting Homing Amulet."
+You input 0 and a glowing amulet apears in between Reimu's fingers.
+Reimu examines it.
+Reimu: "This looks like one of my amulets."
+Reimu tosses it exparimently.
+It flies through the air, curving to hit a specific part of the ground.
+Reimu: "It works like normal too."
+"You can choose where it goes?"
+Reimu: "Of course. It can be somewhat limited when there's cover it might hit instead though."
+"Ah."
+Next you try Graze.
+Reimu starts leaving a trail of afterimages so thick, it's hard to tell where she even is.

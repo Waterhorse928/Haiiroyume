@@ -1436,7 +1436,7 @@ def chooseSkill(char):
             [s.info3 if hasattr(s, 'info3') else '' for s in char.skills]]
     box(display)
     while True:
-        result = ask(0,len(char.skills))
+        result = ask(0,len(char.skills)-1)
         result = char.skills[result]
         if result.costType == "spend" or result.costType == "spendall":
             if result.cost <= char.sp:
@@ -1902,7 +1902,7 @@ def alfonseAI(foe):
     random.shuffle(party)
     target = party.pop()
     decoy = False
-    if party != 0:
+    if len(party) != 0:
         decoy = party.pop()
     if foe.sp <= 10:
         foe.nextSkill = ScorchingSlashFoe()
@@ -2215,6 +2215,7 @@ def mainMenu():
             l = listSaveFiles()
             if l == []:
                 select = 1
+                print("No save files detected, starting a new game.")
             else:
                 box([["-- Choose a save file --"],[l]])
                 save = askList(l)

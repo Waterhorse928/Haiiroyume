@@ -861,7 +861,7 @@ class Neoma(Character):
     def __init__(self):
         super().__init__("Neoma", 38)
         self.sp = 0
-        self.term = "Spirits"
+        self.term = "Souls"
         self.skills = [Flux(),Luna(),InexorableDestiny()]
 
 class Alfonse(Character):
@@ -1871,6 +1871,7 @@ def neomaAI(foe):
     party = getPartyList(foe,False,True)
     random.shuffle(party)
     foe.sp += 3
+    print(f"{foe.name} gains 3 Souls!")
     if foe.sp >= 12:
         foe.nextSkill = InexorableDestinyFoe()
         target = random.choice(party)

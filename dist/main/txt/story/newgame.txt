@@ -1,0 +1,10 @@
+WIP
+Hello!
+This is a fangame that includes both copyrighted and orginal characters.
+I don't own the copyrighted ones.
+Saving is automatic.
+You can skip dialoge by typing skip.
+The story and save files are in the txt folder.
+I made them very accessible so maybe finish the game before you mess with them?
+Do as you will and have fun.
+Thanks for playing my game!

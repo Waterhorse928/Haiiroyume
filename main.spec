@@ -9,8 +9,7 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('txt/save/*.txt', 'save'),
-        ('txt/story/*.txt', 'story')
+        ('txt', 'txt')
     ],
     hiddenimports=[],
     hookspath=[],

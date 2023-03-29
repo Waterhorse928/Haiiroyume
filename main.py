@@ -1901,7 +1901,7 @@ def alfonseAI(foe):
     random.shuffle(party)
     target = party.pop()
     decoy = False
-    if party != 0:
+    if len(party) != 0:
         decoy = party.pop()
     if foe.sp <= 10:
         foe.nextSkill = ScorchingSlashFoe()

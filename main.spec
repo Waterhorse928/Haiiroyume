@@ -1,4 +1,4 @@
- -*- mode: python ; coding: utf-8 -*-
+# -*- mode: python ; coding: utf-8 -*-
 
 
 block_cipher = None
@@ -11,8 +11,6 @@ a = Analysis(
     datas=[
         ('txt/save/*.txt', 'save'),
         ('txt/story/*.txt', 'story')
-
-
     ],
     hiddenimports=[],
     hookspath=[],
@@ -42,6 +40,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['square.ico'],
 )
 coll = COLLECT(
     exe,

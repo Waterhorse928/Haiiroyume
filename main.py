@@ -264,6 +264,7 @@ class DullahanNightFoe(PartyAttack):
         self.info3 = f"to all enemies"    
         self.costType = "spendall" 
 
+# Change to self support +1 head.
 class FlyingHead(OneTargetAttack):
     def __init__(self):
         super().__init__()
@@ -274,6 +275,7 @@ class FlyingHead(OneTargetAttack):
         self.info2 = f"Deals {self.damage} damage"      
         self.costType = "rank" 
 
+# remove Gain 1 Head and maybe adjust damage
 class RokurokubiFlight(OneTargetAttack):
     def __init__(self):
         super().__init__()
@@ -1655,6 +1657,7 @@ def chromAI(foe):
     text.append(f"{foe.name}'s next target isn't clear.")
     foe.insightDisplay = random.choice(text) 
 
+# Dullahan night could do more damage... maybe.
 def sekibankiAI(foe):
     foe.sp += 5
     foe.insightTarget = random.randint(0, 1)
@@ -1767,6 +1770,7 @@ def kurohebiAI(foe):
     garbleness = (foe.sp/15)
     foe.insightDisplay = garble(random.choice(text),prob=garbleness)
 
+# Needs work, it's too easy and too confusing at the same time
 def mediasAI(foe):
     text = []
     party = getPartyList(foe,False,True)
@@ -1930,6 +1934,7 @@ def alfonseAI(foe):
     foe.nextTarget = target
     foe.insightDisplay = random.choice(text)
 
+# Needs work, it's too easy. Maybe make the flash bang not take a turn. or last more than a turn. or something.
 def markAI(foe):
     text = []
     party = getPartyList(foe,False,True)
@@ -2291,7 +2296,6 @@ def beginBattle(foe,win,lose):
         updateSave(win)
     else:
         startStory(f"defeat{foe}")
-        updateSave(lose)
 
 def hakureiShrine():
     global chars
@@ -2433,5 +2437,6 @@ mainMenu()
 # haha this is what you get 
 secretCode = ["#EasterEgg"]
 print(secretCode)
+# sure ok
 
 

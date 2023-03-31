@@ -14,7 +14,7 @@ Feel free to explore and be creative, there is no one strategy to win.
 
 (there is no loading screen for us to put tips, so here's one: watch for patterns in boss actions, spending and targets)
 
-#Credits:
+# Credits:
   Story by WaterHorse928
   Code by WaterHorse928
   Application Support by tyres008

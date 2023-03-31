@@ -264,27 +264,24 @@ class DullahanNightFoe(PartyAttack):
         self.info3 = f"to all enemies"    
         self.costType = "spendall" 
 
-# Change to self support +1 head.
-class FlyingHead(OneTargetAttack):
+class FlyingHead(SelfSupport):
     def __init__(self):
         super().__init__()
-        self.damage = 5
+        self.damage = 0
         self.name = f"Flying Head"
         self.rank = 1
         self.info = f"Required: {self.rank} Head"
-        self.info2 = f"Deals {self.damage} damage"      
+        self.info2 = f"Gain 1 Head"      
         self.costType = "rank" 
 
-# remove Gain 1 Head and maybe adjust damage
 class RokurokubiFlight(OneTargetAttack):
     def __init__(self):
         super().__init__()
-        self.damage = 6
+        self.damage = 5
         self.name = f"Rokurokubi Flight"
         self.rank = 3
         self.info = f"Required: {self.rank} Heads"
         self.info2 = f"Deals {self.damage} damage"  
-        self.info3 = f"Gain 1 Head" 
         self.costType = "rank" 
 
 class MultiplicativeHead(SelfSupport):
@@ -293,7 +290,7 @@ class MultiplicativeHead(SelfSupport):
         self.name = f"Multiplicative Head"
         self.rank = 5
         self.info = f"Required: {self.rank} Heads"
-        self.info2 = f"Gain 3 Heads."   
+        self.info2 = f"Gain 3 Heads"   
         self.costType = "rank" 
 
 class SeventhHead(OneTargetAttack):
@@ -312,7 +309,7 @@ class DullahanNight(OneTargetAttack):
         self.damage = 30
         self.name = f"Dullahan Night"
         self.cost = 10
-        self.info = f"Cost: {self.cost} Heads"
+        self.info = f"Cost All: {self.cost} Heads"
         self.info2 = f"Deals x3 damage"
         self.info3 = f"x = number of Heads"
         self.costType = "spendall" 
@@ -847,7 +844,7 @@ class Kurohebi(Character):
 
 class Medias(Character):
     def __init__(self):
-        super().__init__("Medias Moritake", 62)
+        super().__init__("Medias Moritake", 72)
         self.sp = 0
         self.term = "Momentum"
         self.skills = [EmperorDance(),PenguinHighway(),EmperorsClaw()]
@@ -989,6 +986,7 @@ class MarkFoe(Foe):
         self.term = "Spirit"
         self.light = False
 
+# User Interface
 def box(text):
     # boxSize = os.get_terminal_size().columns - 2
     boxSize = 120
@@ -1046,6 +1044,21 @@ def garble(s, prob=0.5):
     
     return garbled_s
 
+def startStory (file):
+    x = open(f"{dir_path}/txt/story/{file}.txt","r",encoding='utf-8')
+    y = x.readlines()
+    for z in y:
+        z = z.replace("\n","")
+        if z == "WIP":
+            return
+        print(z, end='')
+        a = input(" ")
+        if a == "skip":
+            return
+        if a == "menu":
+            return "menu"
+
+# Skills and Turn
 def getPartyList(unit,koed,enemy):
     party = []
     if isinstance(unit,Character):
@@ -1112,7 +1125,7 @@ def useSkill(unit,skill):
     if isinstance(skill,MasterSpark):
         unit.dodge = True
     elif isinstance(skill,DullahanNightFoe):
-        skill.damage = unit.sp*4
+        skill.damage = unit.sp*5
     elif isinstance(skill,DullahanNight):
         skill.damage = unit.sp*3
     elif isinstance(skill,LunaFoe):
@@ -1285,10 +1298,6 @@ def useSkill(unit,skill):
                     hpHealed = unit.hp - hpHealed
                     time.sleep(pause)
                     print(f"{unit.name} recovered {hpHealed} health!")
-                if isinstance(skill,RokurokubiFlight):
-                    unit.sp += 1
-                    time.sleep(pause)
-                    print(f"{unit.name} gained 1 Head!")
                 if isinstance(skill,BlindShotFoe) or isinstance(skill,ImperceptibleFoe):
                     target.blind = 2
                     time.sleep(pause)
@@ -1330,6 +1339,10 @@ def useSkill(unit,skill):
             unit.hp = min(unit.hpMax,unit.hp+skill.heal)
             time.sleep(pause)
             print(f"{unit.name} recovered {unit.hp-hpBefore} health!")
+        if isinstance(skill,FlyingHead):
+            unit.sp += 1
+            time.sleep(pause)
+            print(f"{unit.name} gained 1 Head!")
         if isinstance(skill,MultiplicativeHead):
             unit.sp += 3
             time.sleep(pause)
@@ -1553,6 +1566,7 @@ def unitTurn(unit):
         else:
             useSkill(unit,unit.nextSkill)
 
+# Foe Insight Steps
 def marisaAI(foe):
     foe.insightSkill = random.randint(0, 2)
     foe.insightTarget = 2
@@ -1657,7 +1671,6 @@ def chromAI(foe):
     text.append(f"{foe.name}'s next target isn't clear.")
     foe.insightDisplay = random.choice(text) 
 
-# Dullahan night could do more damage... maybe.
 def sekibankiAI(foe):
     foe.sp += 5
     foe.insightTarget = random.randint(0, 1)
@@ -1770,8 +1783,8 @@ def kurohebiAI(foe):
     garbleness = (foe.sp/15)
     foe.insightDisplay = garble(random.choice(text),prob=garbleness)
 
-# Needs work, it's too easy and too confusing at the same time
 def mediasAI(foe):
+    # Needs work, it's too easy and too confusing at the same time
     text = []
     party = getPartyList(foe,False,True)
     random.shuffle(party)
@@ -1934,8 +1947,8 @@ def alfonseAI(foe):
     foe.nextTarget = target
     foe.insightDisplay = random.choice(text)
 
-# Needs work, it's too easy. Maybe make the flash bang not take a turn. or last more than a turn. or something.
 def markAI(foe):
+    # Needs work, it's too easy. Maybe make the flash bang not take a turn. or last more than a turn. or something.
     text = []
     party = getPartyList(foe,False,True)
     random.shuffle(party)
@@ -2014,7 +2027,8 @@ def insightTurn():
                 markAI(foe)
     display = [["-- Insight --"],[foe.insightDisplay for foe in foes]]
     box(display)
-    
+
+# Battle Loop
 def cleanup():
     for char in chars:
         if getattr(char, 'graze', False):
@@ -2099,23 +2113,59 @@ def battleLoop():
         box([["You defeated the boss!"]])
         return True
 
-def startStory (file):
-    x = open(f"{dir_path}/txt/story/{file}.txt","r",encoding='utf-8')
-    y = x.readlines()
-    for z in y:
-        z = z.replace("\n","")
-        if z == "WIP":
-            return
-        print(z, end='')
-        a = input(" ")
-        if a == "skip":
-            return
-        if a == "menu":
-            return "menu"
+# Battle Start
+def characterSelect():
+    charList = [Reimu()]
+    if readSave(0):
+        charList.append(Marisa())
+    if readSave(1):
+        charList.append(Robin())
+    if readSave(2):
+        charList.append(Chrom())
+    if readSave(3):
+        charList.append(Sekibanki())
+    if readSave(4):
+        charList.append(Kogasa())
+    if readSave(5):
+        charList.append(Kurohebi())
+    if readSave(6):
+        charList.append(Medias())
+    if readSave(7):
+        charList.append(William())
+    if readSave(8):
+        charList.append(Neoma())
+    if readSave(9):
+        charList.append(Alfonse())
+    if readSave(10):
+        charList.append(Mark())
+    charInt = [*range(1,len(charList)+1)]
+    charListReturn = []
+    for y in range(0,min(4,len(charList))):
+        display = [["-- Character Select --"]]
+        for x in charInt:
+            display.append([f"{x}. {charList[x-1].name}"])
+        box(display)
+        n = askList(charInt)
+        charInt.remove(n)
+        charListReturn.append(charList[n-1])
+        print (f"Selected {charListReturn[y].name}")
+    return charListReturn
+    
+def beginBattle(foe,win,lose):
+    global chars
+    global foes
+    if not readSave(lose):
+        startStory(f"enter{foe}")
+        updateSave(lose)
+    chars = characterSelect()
+    foes = [globals()[foe + "Foe"]()]
+    if battleLoop():
+        startStory(f"victory{foe}")
+        updateSave(win)
+    else:
+        startStory(f"defeat{foe}")
 
-def mapMenu():
-    pass
-
+# Save Data
 def newSave():
     txt_dir = os.path.join(dir_path, "txt", "save")
 
@@ -2209,6 +2259,7 @@ def listSaveFiles():
 
     return save_files
 
+# Title Screen
 def mainMenu():
     while True:
         box([["-- Project Labyrinth --"],
@@ -2233,43 +2284,7 @@ def mainMenu():
         if select == 2:
             break
 
-def characterSelect():
-    charList = [Reimu()]
-    if readSave(0):
-        charList.append(Marisa())
-    if readSave(1):
-        charList.append(Robin())
-    if readSave(2):
-        charList.append(Chrom())
-    if readSave(3):
-        charList.append(Sekibanki())
-    if readSave(4):
-        charList.append(Kogasa())
-    if readSave(5):
-        charList.append(Kurohebi())
-    if readSave(6):
-        charList.append(Medias())
-    if readSave(7):
-        charList.append(William())
-    if readSave(8):
-        charList.append(Neoma())
-    if readSave(9):
-        charList.append(Alfonse())
-    if readSave(10):
-        charList.append(Mark())
-    charInt = [*range(1,len(charList)+1)]
-    charListReturn = []
-    for y in range(0,min(4,len(charList))):
-        display = [["-- Character Select --"]]
-        for x in charInt:
-            display.append([f"{x}. {charList[x-1].name}"])
-        box(display)
-        n = askList(charInt)
-        charInt.remove(n)
-        charListReturn.append(charList[n-1])
-        print (f"Selected {charListReturn[y].name}")
-    return charListReturn
-    
+# Areas
 def area(place, actions):
     display = [[f"-- {place} --"], [], []]  # Initialize the third list for extra actions
     n = 0
@@ -2282,20 +2297,6 @@ def area(place, actions):
     box(display)
     index = ask(0, len(actions)-1)
     return actions[index]
-
-def beginBattle(foe,win,lose):
-    global chars
-    global foes
-    if not readSave(lose):
-        startStory(f"enter{foe}")
-        updateSave(lose)
-    chars = characterSelect()
-    foes = [globals()[foe + "Foe"]()]
-    if battleLoop():
-        startStory(f"victory{foe}")
-        updateSave(win)
-    else:
-        startStory(f"defeat{foe}")
 
 def hakureiShrine():
     global chars

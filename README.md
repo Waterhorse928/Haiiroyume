@@ -1,8 +1,8 @@
-# Project-Labyrinth
+# Haiiroyume
 
  TL:DR: this is a game. it works sometimes.
  
- LABYRINTH is a rogue-like turn-based party-combat story game.
+ Haiiroyume is a rogue-like turn-based party-combat story game.
  Progress through the Labyrinth by defeating AI-controlled enemies.
  Defeated enemies can be recruited to your roster.
  Before each combat, draft a team of four characters from your roster to your party.

@@ -1,6 +1,6 @@
 "Reimu, I think you might want to take a look around."
 Reimu starts to snore loudly.
-"I know you aren't asleep!"
+"Hey, this is important!"
 "Look up! Does it usually look like that above the shrine?"
 Reimu:"What are you-"
 As she looked up she could see the gray and black void.
@@ -20,7 +20,7 @@ Good question...
 "Or why I'm here?"
 "Or why any of this is happening?!"
 Suddenly the questions you'd been avoiding crash in on you.
-You can feel your throat constrict and your heart start to race.
+You can feel panic start to well up in your chest.
 Reimu: "Whoa there, how about you sit down for a second?"
 Reimu: "That's it, breathe a bit."
 You let Reimu guide you to sit down under the veranda.
@@ -64,8 +64,10 @@ Reimu: "You're throwing a party?"
 "It's more of a group of people that work together to acomplish something."
 Reimu: "Ah."
 Reimu: "Well sure then."
+You hand her the Wii Remote.
 After a second, Reimu figures out how to use the number pad.
 -- Reimu Hakurei has joined your party! --
+Reimu give the Wii Remote back.
 Remembering the menu from earlier, you press the home button.
 "Sure enough, there you are."
 But now there's extra stuff at the bottom and the number pad's back.
@@ -82,3 +84,35 @@ Reimu: "Of course. It can be somewhat limited when there's cover it might hit in
 "Ah."
 Next you try Graze.
 Reimu starts leaving a trail of afterimages so thick, it's hard to tell where she even is.
+Reimu: "Try to hit me."
+"Wha- what?"
+Reimu: "This seems to represent my ability to float."
+Reimu: "If that's the case, there's no way you can even touch me."
+"Right..."
+"Okay, here it goes!"
+You have no idea how to throw a punch, but you try your best.
+The menu pops up again with some different text.
+Gate used Weak Punch!
+Reimu grazed the attack gaining 0 points!
+"I used Weak Punch?"
+"Couldn't have at least been a normal punch?"
+You notice Reimu looks normal again.
+"Oh, I guess the effect doesn't stick around?"
+Reimu: "Hmm... That's kinda a pain."
+"What? That you aren't completely invincible all the time?"
+Reimu: "Yeah."
+"Right... okay."
+We can't test out her other moves, they cost points.
+It says she gets points by grazing, but maybe it's based on the damage of the attack.
+If that's the case, did my attack deal zero damage?
+Reimu: "Was this gate always here?"
+"What kind of question is tha- ...oh."
+Reimu's standing in front of where the door to the shrine was.
+It's been replaced with an open sliver gate.
+Instead of leading into the shine the opening instead was a white portal of sorts.
+Reimu: "It says something up here too."
+Marisa Kirisame.
+You know that name too, another character from the same place Reimu's from.
+So wait, does-
+And Reimu's already walking into the portal.
+"Sheesh, could we think about this for a second?"

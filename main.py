@@ -1045,6 +1045,7 @@ def garble(s, prob=0.5):
     return garbled_s
 
 def startStory (file):
+    # Need to add a way to use the bax function.
     x = open(f"{dir_path}/txt/story/{file}.txt","r",encoding='utf-8')
     y = x.readlines()
     for z in y:
@@ -2156,7 +2157,8 @@ def beginBattle(foe,win,lose):
     global foes
     if not readSave(lose):
         startStory(f"enter{foe}")
-        updateSave(lose)
+    else:
+        startStory(f"advice{foe}")
     chars = characterSelect()
     foes = [globals()[foe + "Foe"]()]
     if battleLoop():
@@ -2164,6 +2166,7 @@ def beginBattle(foe,win,lose):
         updateSave(win)
     else:
         startStory(f"defeat{foe}")
+        updateSave(lose)
 
 # Save Data
 def newSave():

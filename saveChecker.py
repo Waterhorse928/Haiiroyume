@@ -1,6 +1,6 @@
 
 #------------#
-save = 0
+save = 2
 #------------#
 import os
 dir_path = os.path.dirname(os.path.realpath(__file__))

@@ -76,7 +76,7 @@ Reimu: "Those are my attacks... At least some of them."
 You input 0 and a glowing amulet apears in between Reimu's fingers.
 Reimu examines it.
 Reimu: "This looks like one of my amulets."
-Reimu tosses it exparimently.
+Reimu tosses it experimentally.
 It flies through the air, curving to hit a specific part of the ground.
 Reimu: "It works like normal too."
 "You can choose where it goes?"
@@ -108,7 +108,7 @@ If that's the case, did my attack deal zero damage?
 Reimu: "Was this gate always here?"
 "What kind of question is tha- ...oh."
 Reimu's standing in front of where the door to the shrine was.
-It's been replaced with an open sliver gate.
+It's been replaced with an open silver gate.
 Instead of leading into the shine the opening instead was a white portal of sorts.
 Reimu: "It says something up here too."
 Marisa Kirisame.
